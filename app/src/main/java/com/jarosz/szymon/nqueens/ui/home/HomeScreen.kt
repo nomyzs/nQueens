@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,5 +39,11 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), onStartGame: (boardSi
                 onValueChange = { viewModel.updateBoardSize(it.fastRoundToInt()) }
         )
         Button(onClick = { onStartGame(state.boardSize) }) { Text("Start game") }
+        LazyColumn {
+            items(state.results.size) { index ->
+                val result = state.results[index]
+                ListItem({ Text("${result.boardSize}x${result.boardSize} - ${result.timeMillis / 1000}s") })
+            }
+        }
     }
 }

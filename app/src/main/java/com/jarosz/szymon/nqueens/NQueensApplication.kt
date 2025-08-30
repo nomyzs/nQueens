@@ -1,4 +1,4 @@
-package com.jarosz.szymon.nqueens.ui
+package com.jarosz.szymon.nqueens
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp

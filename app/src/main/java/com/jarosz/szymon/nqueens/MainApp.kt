@@ -1,4 +1,4 @@
-package com.jarosz.szymon.nqueens.ui
+package com.jarosz.szymon.nqueens
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController

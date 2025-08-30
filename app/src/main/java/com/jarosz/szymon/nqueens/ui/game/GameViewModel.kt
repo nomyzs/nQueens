@@ -3,6 +3,8 @@ package com.jarosz.szymon.nqueens.ui.game
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jarosz.szymon.nqueens.data.GameResult
+import com.jarosz.szymon.nqueens.data.ResultsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -16,7 +18,7 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class GameViewModel @Inject constructor(savedStateHandle: SavedStateHandle) : ViewModel() {
+class GameViewModel @Inject constructor(val resultsRepo: ResultsRepository, savedStateHandle: SavedStateHandle) : ViewModel() {
     private val _boardSize: Int = checkNotNull(savedStateHandle["boardSize"])
     private val _state = MutableStateFlow(_initialState)
     private val _timer = MutableStateFlow(0L)
@@ -25,7 +27,7 @@ class GameViewModel @Inject constructor(savedStateHandle: SavedStateHandle) : Vi
         gameState.copy(board = gameState.board, time = time)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), _initialState)
 
-    private var _startTime: Long? = null
+    private var _startTime: Long = System.currentTimeMillis()
     private var _timerJob: Job? = null
 
     init {
@@ -57,9 +59,16 @@ class GameViewModel @Inject constructor(savedStateHandle: SavedStateHandle) : Vi
         val win = checkWin(markedBoard)
         if (win) {
             _timerJob?.cancel()
+            saveGameResult()
         }
 
         _state.value = current.copy(board = markedBoard, showWinDialog = win)
+    }
+
+    private fun saveGameResult() {
+        viewModelScope.launch {
+            resultsRepo.insertResult(GameResult(_startTime, _boardSize, _timer.value))
+        }
     }
 
     private fun markConflicts(board: List<Cell>): List<Cell> {
