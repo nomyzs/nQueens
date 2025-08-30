@@ -10,7 +10,7 @@ class GameViewModel(private val boardSize: Int) : ViewModel() {
     val state: StateFlow<GameState> = _state
 
     private val _initialState: GameState
-        get() = GameState(boardSize.generateBoard())
+        get() = GameState(boardSize, boardSize.generateBoard())
 
     fun placeQueen(cell: Cell) {
         val current = _state.value
@@ -19,8 +19,9 @@ class GameViewModel(private val boardSize: Int) : ViewModel() {
             else it
         }
         val markedBoard = markConflicts(updatedBoard)
+        val win = checkWin(markedBoard)
 
-        _state.value = current.copy(board = markedBoard)
+        _state.value = current.copy(board = markedBoard, showWinDialog = win)
     }
 
     private fun markConflicts(board: List<Cell>): List<Cell> {
@@ -36,9 +37,26 @@ class GameViewModel(private val boardSize: Int) : ViewModel() {
             } else cell.copy(isConflict = false)
         }
     }
+
+    private fun checkWin(board: List<Cell>): Boolean {
+        val queens = board.filter { it.hasQueen && !it.isConflict }
+
+        return queens.size == boardSize
+    }
+
+    fun onWinDialogDismiss() {
+        _state.value = _state.value.copy(showWinDialog = false)
+    }
+
+    fun resetGame() {
+        _state.value = _initialState
+    }
 }
 
-data class GameState(val board: List<Cell> = emptyList())
+data class GameState(val totalQueens: Int, val board: List<Cell> = emptyList(), val showWinDialog: Boolean = false) {
+    val placedQueensCount: Int
+        get() = board.count { it.hasQueen }
+}
 
 data class Cell(val row: Int, val col: Int, val hasQueen: Boolean = false, val isConflict: Boolean = false)
 

@@ -27,7 +27,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 arguments = listOf(navArgument("boardSize") { type = NavType.IntType })
         ) { backStackEntry ->
             val size = backStackEntry.arguments?.getInt("boardSize") ?: 4
-            GameScreen(size)
+            GameScreen(size, onBack = { navController.popBackStack() })
         }
     }
 }

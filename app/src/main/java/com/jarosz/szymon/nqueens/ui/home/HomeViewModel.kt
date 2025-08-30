@@ -9,13 +9,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 class HomeViewModel : ViewModel() {
-    private val _boardSize = MutableStateFlow(8)
+    private val _boardSize = MutableStateFlow(defaultBoardSize)
 
     val homeState: StateFlow<HomeState> = _boardSize.map { boardSize -> HomeState(boardSize) }
             .stateIn(viewModelScope, SharingStarted.Eagerly, _initialState)
 
     private val _initialState: HomeState
-        get() = HomeState(boardSize = 8)
+        get() = HomeState(_boardSize.value)
 
 
     fun updateBoardSize(size: Int) {
@@ -24,4 +24,6 @@ class HomeViewModel : ViewModel() {
 }
 
 
-data class HomeState(val boardSize: Int = 8)
+data class HomeState(val boardSize: Int)
+
+const val defaultBoardSize = 5
