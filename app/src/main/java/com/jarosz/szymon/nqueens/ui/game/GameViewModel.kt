@@ -1,13 +1,43 @@
 package com.jarosz.szymon.nqueens.ui.game
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class GameViewModel(private val boardSize: Int) : ViewModel() {
 
     private val _state = MutableStateFlow(_initialState)
-    val state: StateFlow<GameState> = _state
+    private val _timer = MutableStateFlow(0L)
+
+    val state: StateFlow<GameState> = combine(_state, _timer) { gameState, time ->
+        gameState.copy(board = gameState.board, time = time)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, _initialState)
+
+    private var _startTime: Long? = null
+    private var _timerJob: Job? = null
+
+    init {
+        startTimer()
+    }
+
+    private fun startTimer() {
+        _timer.value = 0L
+        _startTime = System.currentTimeMillis()
+        _timerJob = viewModelScope.launch {
+            while (true) {
+                val currentTime = System.currentTimeMillis()
+                _timer.value = currentTime - _startTime!!
+                delay(1000L)
+            }
+        }
+    }
 
     private val _initialState: GameState
         get() = GameState(boardSize, boardSize.generateBoard())
@@ -20,6 +50,9 @@ class GameViewModel(private val boardSize: Int) : ViewModel() {
         }
         val markedBoard = markConflicts(updatedBoard)
         val win = checkWin(markedBoard)
+        if (win) {
+            _timerJob?.cancel()
+        }
 
         _state.value = current.copy(board = markedBoard, showWinDialog = win)
     }
@@ -50,10 +83,16 @@ class GameViewModel(private val boardSize: Int) : ViewModel() {
 
     fun resetGame() {
         _state.value = _initialState
+        startTimer()
     }
 }
 
-data class GameState(val totalQueens: Int, val board: List<Cell> = emptyList(), val showWinDialog: Boolean = false) {
+data class GameState(
+        val boardSize: Int,
+        val board: List<Cell> = emptyList(),
+        val showWinDialog: Boolean = false,
+        val time: Long = 0L
+) {
     val placedQueensCount: Int
         get() = board.count { it.hasQueen }
 }

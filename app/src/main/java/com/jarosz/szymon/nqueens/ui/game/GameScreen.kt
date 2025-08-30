@@ -2,8 +2,10 @@ package com.jarosz.szymon.nqueens.ui.game
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun GameScreen(boardSize: Int, onBack: () -> Boolean) {
     val viewModel = viewModel<GameViewModel>(factory = GameViewModelFactory(boardSize))
+    //TODO: check if collectAsStateWithLifecycle is better and solve dialog dismiss if yes
     val state by viewModel.state.collectAsState()
 
     if (state.showWinDialog) {
@@ -54,42 +57,49 @@ fun GameScreen(boardSize: Int, onBack: () -> Boolean) {
             .fillMaxSize(),
             contentAlignment = Alignment.Center) {
         Column {
-            Text(
-                    "Queens: ${state.placedQueensCount}/${boardSize}",
+            Row(
                     modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                    fontSize = 18.sp
-            )
-
-            LazyVerticalGrid(
-                    columns = GridCells.Fixed(boardSize),
-                    modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f)
-                            .padding(16.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                items(state.board.size) { index ->
-                    val cell = state.board[index]
-                    val row = cell.row
-                    val col = cell.col
-                    val isLightSquare = (row + col) % 2 == 0
+                Text("Queens: ${state.placedQueensCount}/${boardSize}")
+                Text("Time: ${state.time}s")
+            }
 
-                    Box(
-                            modifier = Modifier
-                                    .background(if (isLightSquare) Color.LightGray else Color.DarkGray)
-                                    .aspectRatio(1f)
-                                    .clickable { viewModel.placeQueen(cell) }
-                    ) {
-                        if (cell.hasQueen) {
-                            Text(
-                                    "♛",
-                                    modifier = Modifier.align(Alignment.Center),
-                                    color = if (cell.isConflict) Color.Red else if (isLightSquare) Color.Black else Color.White,
-                                    fontSize = 24.sp
-                            )
-                        }
-                    }
+            Board(state, { viewModel.placeQueen(it) })
+        }
+    }
+}
+
+@Composable
+fun Board(state: GameState, onPlaceQueen: (cell: Cell) -> Unit) {
+    LazyVerticalGrid(
+            columns = GridCells.Fixed(state.boardSize),
+            modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+                    .padding(16.dp)
+    ) {
+        items(state.board.size) { index ->
+            val cell = state.board[index]
+            val row = cell.row
+            val col = cell.col
+            val isLightSquare = (row + col) % 2 == 0
+
+            Box(
+                    modifier = Modifier
+                            .background(if (isLightSquare) Color.LightGray else Color.DarkGray)
+                            .aspectRatio(1f)
+                            .clickable { onPlaceQueen(cell) }
+            ) {
+                if (cell.hasQueen) {
+                    Text(
+                            "♛",
+                            modifier = Modifier.align(Alignment.Center),
+                            color = if (cell.isConflict) Color.Red else if (isLightSquare) Color.Black else Color.White,
+                            fontSize = 24.sp
+                    )
                 }
             }
         }
