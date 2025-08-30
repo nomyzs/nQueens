@@ -23,14 +23,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
-
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun GameScreen(boardSize: Int, onBack: () -> Boolean) {
-    val viewModel = viewModel<GameViewModel>(factory = GameViewModelFactory(boardSize))
+fun GameScreen(boardSize: Int, onBack: () -> Boolean, viewModel: GameViewModel = hiltViewModel()) {
     //TODO: check if collectAsStateWithLifecycle is better and solve dialog dismiss if yes
     val state by viewModel.state.collectAsState()
 
@@ -103,15 +99,5 @@ fun Board(state: GameState, onPlaceQueen: (cell: Cell) -> Unit) {
                 }
             }
         }
-    }
-}
-
-class GameViewModelFactory(private val boardSize: Int) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(GameViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return GameViewModel(boardSize) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

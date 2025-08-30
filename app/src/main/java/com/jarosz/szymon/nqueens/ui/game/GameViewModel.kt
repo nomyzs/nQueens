@@ -1,7 +1,9 @@
 package com.jarosz.szymon.nqueens.ui.game
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,15 +12,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class GameViewModel(private val boardSize: Int) : ViewModel() {
 
+@HiltViewModel
+class GameViewModel @Inject constructor(savedStateHandle: SavedStateHandle) : ViewModel() {
+    private val _boardSize: Int = checkNotNull(savedStateHandle["boardSize"])
     private val _state = MutableStateFlow(_initialState)
     private val _timer = MutableStateFlow(0L)
 
     val state: StateFlow<GameState> = combine(_state, _timer) { gameState, time ->
         gameState.copy(board = gameState.board, time = time)
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, _initialState)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), _initialState)
 
     private var _startTime: Long? = null
     private var _timerJob: Job? = null
@@ -26,6 +31,9 @@ class GameViewModel(private val boardSize: Int) : ViewModel() {
     init {
         startTimer()
     }
+
+    private val _initialState: GameState
+        get() = GameState(_boardSize, _boardSize.generateBoard())
 
     private fun startTimer() {
         _timer.value = 0L
@@ -38,9 +46,6 @@ class GameViewModel(private val boardSize: Int) : ViewModel() {
             }
         }
     }
-
-    private val _initialState: GameState
-        get() = GameState(boardSize, boardSize.generateBoard())
 
     fun placeQueen(cell: Cell) {
         val current = _state.value
@@ -74,7 +79,7 @@ class GameViewModel(private val boardSize: Int) : ViewModel() {
     private fun checkWin(board: List<Cell>): Boolean {
         val queens = board.filter { it.hasQueen && !it.isConflict }
 
-        return queens.size == boardSize
+        return queens.size == _boardSize
     }
 
     fun onWinDialogDismiss() {

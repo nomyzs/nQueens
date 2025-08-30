@@ -15,11 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.util.fastRoundToInt
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
-fun HomeScreen(onStartGame: (boardSize: Int) -> Unit) {
-    val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<HomeViewModel>()
+fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), onStartGame: (boardSize: Int) -> Unit) {
     val state by viewModel.homeState.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier
