@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.jarosz.szymon.nqueens"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.jarosz.szymon.nqueens"
@@ -37,7 +37,7 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
