@@ -11,8 +11,8 @@ import com.jarosz.szymon.nqueens.ui.game.GameScreen
 import com.jarosz.szymon.nqueens.ui.home.HomeScreen
 
 sealed class Screen(val route: String) {
-    object Home : Screen("home")
-    object Game : Screen("game/{boardSize}") {
+    data object Home : Screen("home")
+    data object Game : Screen("game/{boardSize}") {
         fun createRoute(boardSize: Int) = "game/$boardSize"
     }
 }
