@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "results")
 data class GameResult(
-        @PrimaryKey val timestamp: Long = 0L,
-        val boardSize: Int,
+        @PrimaryKey val boardSize: Int,
+        val timestamp: Long = 0L,
         val timeMillis: Long
 )

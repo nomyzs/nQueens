@@ -42,7 +42,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), onStartGame: (boardSi
         LazyColumn {
             items(state.results.size) { index ->
                 val result = state.results[index]
-                ListItem({ Text("${result.boardSize}x${result.boardSize} - ${result.timeMillis / 1000}s") })
+                ListItem({ Text("${result.boardSize}x${result.boardSize} - ${result.timeMillis}ms") })
             }
         }
     }

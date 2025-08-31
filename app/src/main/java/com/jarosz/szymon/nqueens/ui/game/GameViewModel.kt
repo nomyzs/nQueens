@@ -43,7 +43,7 @@ class GameViewModel @Inject constructor(val resultsRepo: ResultsRepository, save
         _timerJob = viewModelScope.launch {
             while (true) {
                 val currentTime = System.currentTimeMillis()
-                _timer.value = currentTime - _startTime!!
+                _timer.value = currentTime - _startTime
                 delay(1000L)
             }
         }
@@ -59,6 +59,8 @@ class GameViewModel @Inject constructor(val resultsRepo: ResultsRepository, save
         val win = checkWin(markedBoard)
         if (win) {
             _timerJob?.cancel()
+            val currentTime = System.currentTimeMillis()
+            _timer.value = currentTime - _startTime
             saveGameResult()
         }
 
@@ -67,7 +69,11 @@ class GameViewModel @Inject constructor(val resultsRepo: ResultsRepository, save
 
     private fun saveGameResult() {
         viewModelScope.launch {
-            resultsRepo.insertResult(GameResult(_startTime, _boardSize, _timer.value))
+            val bestResult = resultsRepo.bestResult(_boardSize)
+
+            if ((bestResult?.timeMillis ?: Long.MAX_VALUE) > _timer.value) {
+                resultsRepo.insertResult(GameResult(_boardSize, _startTime, _timer.value))
+            }
         }
     }
 

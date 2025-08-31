@@ -7,6 +7,8 @@ interface ResultsRepository {
     fun getResults(): Flow<List<GameResult>>
 
     suspend fun insertResult(result: GameResult)
+
+    suspend fun bestResult(boardSize: Int): GameResult?
 }
 
 
@@ -14,4 +16,7 @@ class ResultsRepositoryImpl @Inject constructor(private val dao: ResultsDao) : R
     override fun getResults(): Flow<List<GameResult>> = dao.getResults()
 
     override suspend fun insertResult(result: GameResult) = dao.insert(result)
+
+    override suspend fun bestResult(boardSize: Int): GameResult? = dao.bestResult(boardSize)
+
 }
