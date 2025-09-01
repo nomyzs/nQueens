@@ -1,5 +1,7 @@
 package com.jarosz.szymon.nqueens.ui.common
 
+import com.jarosz.szymon.nqueens.board.Board
+import com.jarosz.szymon.nqueens.ui.game.Cell
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -12,4 +14,21 @@ fun Long.toDurationFormat(): String = "${this / 1000},${(this + 5) / 10 % 100}s"
 fun Long.toDateFormat(): String {
     val date = Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault())
     return date.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
+}
+
+//TODO: perhaps move to State class
+fun Board.toUIBoard(): List<Cell> {
+    val cells = size.generateBoard()
+    val conflicts = getConflicts()
+
+    return cells.map {
+        it.copy(
+                hasQueen = placedQueens.any { queen -> queen.position == it.position },
+                isConflict = conflicts.contains(it.position),
+        )
+    }
+}
+
+fun Int.generateBoard(): List<Cell> = List(this * this) { index ->
+    Cell(row = index / this, col = index % this)
 }

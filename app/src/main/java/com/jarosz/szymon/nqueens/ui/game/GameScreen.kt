@@ -1,6 +1,7 @@
 package com.jarosz.szymon.nqueens.ui.game
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.SpringSpec
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -147,7 +148,7 @@ fun Board(state: GameState, onPlaceQueen: (cell: Cell) -> Unit) {
             val row = cell.row
             val col = cell.col
             val isLightSquare = (row + col) % 2 == 0
-            AnimatedBorderCell(cell.isConflict) {
+            AnimatedBorderCell(cell.isConflict, if (isLightSquare) Color.LightGray else Color.DarkGray) {
                 Box(
                         modifier = Modifier
                                 .background(if (isLightSquare) Color.LightGray else Color.DarkGray)
@@ -169,10 +170,11 @@ fun Board(state: GameState, onPlaceQueen: (cell: Cell) -> Unit) {
 }
 
 @Composable
-fun AnimatedBorderCell(isConflict: Boolean, content: @Composable () -> Unit) {
+fun AnimatedBorderCell(isConflict: Boolean, baseColor: Color, content: @Composable () -> Unit) {
     val borderColor by animateColorAsState(
-            targetValue = if (isConflict) Color.Red else Color.Transparent,
-            label = "BorderColorAnimation"
+            targetValue = if (isConflict) Color.Red else baseColor,
+            label = "BorderColorAnimation",
+            animationSpec = SpringSpec()
     )
 
     Box(

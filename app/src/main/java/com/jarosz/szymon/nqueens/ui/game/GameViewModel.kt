@@ -3,8 +3,12 @@ package com.jarosz.szymon.nqueens.ui.game
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jarosz.szymon.nqueens.board.Board
+import com.jarosz.szymon.nqueens.board.Position
 import com.jarosz.szymon.nqueens.data.GameResult
 import com.jarosz.szymon.nqueens.data.ResultsRepository
+import com.jarosz.szymon.nqueens.ui.common.generateBoard
+import com.jarosz.szymon.nqueens.ui.common.toUIBoard
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -25,6 +29,7 @@ class GameViewModel @Inject constructor(
     private val _boardSize: Int = checkNotNull(savedStateHandle["boardSize"])
     private val _state = MutableStateFlow(_initialState)
     private val _timer = MutableStateFlow(0L)
+    private val _board = Board(_boardSize)
 
     val state: StateFlow<GameState> = combine(_state, _timer) { gameState, time ->
         gameState.copy(board = gameState.board, time = time)
@@ -53,13 +58,15 @@ class GameViewModel @Inject constructor(
     }
 
     fun placeQueen(cell: Cell) {
-        val current = _state.value
-        val updatedBoard = current.board.map {
-            if (it.row == cell.row && it.col == cell.col) it.copy(hasQueen = !it.hasQueen)
-            else it
+        if (_board.hasQueen(cell.position)) {
+            _board.removeQueen(cell.position)
+        } else {
+            _board.addQueen(cell.position)
         }
-        val markedBoard = markConflicts(updatedBoard)
-        val win = checkWin(markedBoard)
+
+        val uiBoard = _board.toUIBoard()
+
+        val win = checkWin(uiBoard)
         if (win) {
             _timerJob?.cancel()
             val currentTime = System.currentTimeMillis()
@@ -67,7 +74,7 @@ class GameViewModel @Inject constructor(
             saveGameResult()
         }
 
-        _state.value = current.copy(board = markedBoard, showWinDialog = win)
+        _state.value = _state.value.copy(board = uiBoard, showWinDialog = false)
     }
 
     private fun saveGameResult() {
@@ -77,20 +84,6 @@ class GameViewModel @Inject constructor(
             if ((bestResult?.timeMillis ?: Long.MAX_VALUE) > _timer.value) {
                 resultsRepo.insertResult(GameResult(_boardSize, _startTime, _timer.value))
             }
-        }
-    }
-
-    private fun markConflicts(board: List<Cell>): List<Cell> {
-        val queens = board.filter { it.hasQueen }
-
-        return board.map { cell ->
-            if (cell.hasQueen) {
-                val conflict = queens.any {
-                    it != cell && (it.row == cell.row || it.col == cell.col ||
-                            kotlin.math.abs(it.row - cell.row) == kotlin.math.abs(it.col - cell.col))
-                }
-                cell.copy(isConflict = conflict)
-            } else cell.copy(isConflict = false)
         }
     }
 
@@ -120,8 +113,9 @@ data class GameState(
         get() = board.count { it.hasQueen }
 }
 
-data class Cell(val row: Int, val col: Int, val hasQueen: Boolean = false, val isConflict: Boolean = false)
-
-private fun Int.generateBoard(): List<Cell> = List(this * this) { index ->
-    Cell(row = index / this, col = index % this)
+data class Cell(
+        val row: Int, val col: Int, val hasQueen: Boolean = false, val isConflict: Boolean = false, val highlight: Boolean = false,
+) {
+    val position: Position = Position(row, col)
 }
+
