@@ -18,14 +18,17 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class GameViewModel @Inject constructor(val resultsRepo: ResultsRepository, savedStateHandle: SavedStateHandle) : ViewModel() {
+class GameViewModel @Inject constructor(
+        private val resultsRepo: ResultsRepository,
+        savedStateHandle: SavedStateHandle,
+) : ViewModel() {
     private val _boardSize: Int = checkNotNull(savedStateHandle["boardSize"])
     private val _state = MutableStateFlow(_initialState)
     private val _timer = MutableStateFlow(0L)
 
     val state: StateFlow<GameState> = combine(_state, _timer) { gameState, time ->
         gameState.copy(board = gameState.board, time = time)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), _initialState)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, _initialState)
 
     private var _startTime: Long = System.currentTimeMillis()
     private var _timerJob: Job? = null

@@ -13,25 +13,29 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 // TODO UI
+// TODO solve landscape
+// TODO solve reset button
 // TODO animations
+// TODO screen transitions
 // TODO sfx
 // TODO tests
 // TODO reset button
 // TODO Readme file
 // TODO Record video
+// TODO explore more backStackEntry in appNav
 // optional:
 // pagination
 @HiltViewModel
 class HomeViewModel @Inject constructor(resultsRepo: ResultsRepository) : ViewModel() {
-    private val _boardSize = MutableStateFlow(defaultBoardSize)
+    private val _boardSize = MutableStateFlow(HomeState.DEFAULT_BOARD_SIZE)
     private val _resultsFlow = resultsRepo.getResults()
 
     val homeState: StateFlow<HomeState> = combine(_boardSize, _resultsFlow) { size, results ->
         HomeState(size, results)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), _initialState)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, _initialState)
 
     private val _initialState: HomeState
-        get() = HomeState(_boardSize.value)
+        get() = HomeState()
 
     fun updateBoardSize(size: Int) {
         _boardSize.value = size
@@ -39,6 +43,8 @@ class HomeViewModel @Inject constructor(resultsRepo: ResultsRepository) : ViewMo
 }
 
 
-data class HomeState(val boardSize: Int, val results: List<GameResult> = emptyList())
-
-const val defaultBoardSize = 5
+data class HomeState(val boardSize: Int = DEFAULT_BOARD_SIZE, val results: List<GameResult> = emptyList()) {
+    companion object {
+        const val DEFAULT_BOARD_SIZE = 5
+    }
+}

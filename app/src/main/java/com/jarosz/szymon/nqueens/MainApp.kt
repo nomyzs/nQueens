@@ -26,9 +26,8 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         composable(
                 Screen.Game.route,
                 arguments = listOf(navArgument("boardSize") { type = NavType.IntType }),
-        ) { backStackEntry ->
-            val size = backStackEntry.arguments?.getInt("boardSize") ?: 4
-            GameScreen(size, onBack = { navController.popBackStack() })
+        ) { _ ->
+            GameScreen(onBack = { navController.popBackStack() })
         }
     }
 }
