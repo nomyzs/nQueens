@@ -40,7 +40,7 @@ import com.jarosz.szymon.nqueens.ui.common.toDurationFormat
 import com.jarosz.szymon.nqueens.ui.game.QUEEN
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), onStartGame: (boardSize: Int) -> Unit) {
+fun HomeScreen(output: HomeScreenOutput, viewModel: HomeViewModel = hiltViewModel()) {
     val state by viewModel.homeState.collectAsStateWithLifecycle()
 
     Scaffold { innerPadding ->
@@ -59,7 +59,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), onStartGame: (boardSi
                 }
                 Text("Place queens without conflicts", style = MaterialTheme.typography.labelSmall)
                 Spacer(Modifier.height(16.dp))
-                GameSetup(state, viewModel, onStartGame)
+                GameSetup(state, { viewModel.updateBoardSize(it) }, { output.onStartGame(it) })
                 Spacer(Modifier.height(16.dp))
                 GameCard { BestTimes(state) }
             }
@@ -70,7 +70,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), onStartGame: (boardSi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GameSetup(state: HomeState, viewModel: HomeViewModel, onStartGame: (boardSize: Int) -> Unit) { // todo duplicated listener (interface -> viewmodel)
+fun GameSetup(state: HomeState, onSliderValueChange: (Int) -> Unit, onStartGame: (boardSize: Int) -> Unit) {
     GameCard {
         Column {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -79,7 +79,7 @@ fun GameSetup(state: HomeState, viewModel: HomeViewModel, onStartGame: (boardSiz
             }
             Slider(
                     valueRange = 4f..20f, value = state.boardSize.toFloat(),
-                    onValueChange = { viewModel.updateBoardSize(it.fastRoundToInt()) },
+                    onValueChange = { onSliderValueChange(it.fastRoundToInt()) },
                     track = { sliderState ->
                         SliderDefaults.Track(
                                 sliderState,
@@ -109,26 +109,30 @@ fun GameSetup(state: HomeState, viewModel: HomeViewModel, onStartGame: (boardSiz
 
 @Composable
 private fun BestTimes(state: HomeState) {
-    Column {
-        Text("Best times:", style = MaterialTheme.typography.titleMedium)
-        LazyColumn {
-            items(state.results.size) { index ->
-                val result = state.results[index]
-                Card(
-                        Modifier.padding(vertical = 4.dp),
-                        border = if (state.boardSize == result.boardSize) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
-                        shape = MaterialTheme.shapes.medium) {
-                    ListItem(
-                            { Text(result.timestamp.toDateFormat()) },
-                            leadingContent = { Text(result.boardSize.toBoardSizeFormat(), fontWeight = FontWeight.Bold) },
-                            trailingContent = { Text(result.timeMillis.toDurationFormat(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold) }
-                    )
+    if (state.results.isEmpty()) {
+        Text("No results yet", style = MaterialTheme.typography.bodyMedium)
+    } else {
+        Column {
+            Text("Best times:", style = MaterialTheme.typography.titleMedium)
+            LazyColumn {
+                items(state.results.size) { index ->
+                    val result = state.results[index]
+                    Card(
+                            Modifier.padding(vertical = 4.dp),
+                            border = if (state.boardSize == result.boardSize) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
+                            shape = MaterialTheme.shapes.medium) {
+                        ListItem(
+                                { Text(result.timestamp.toDateFormat()) },
+                                leadingContent = { Text(result.boardSize.toBoardSizeFormat(), fontWeight = FontWeight.Bold) },
+                                trailingContent = { Text(result.timeMillis.toDurationFormat(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold) }
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-
-
-
+interface HomeScreenOutput {
+    fun onStartGame(boardSize: Int)
+}

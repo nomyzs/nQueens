@@ -43,7 +43,7 @@ import com.jarosz.szymon.nqueens.ui.common.toBoardSizeFormat
 import com.jarosz.szymon.nqueens.ui.common.toDurationFormat
 
 @Composable
-fun GameScreen(onBack: () -> Boolean, viewModel: GameViewModel = hiltViewModel()) {
+fun GameScreen(output: GameScreenOutput, viewModel: GameViewModel = hiltViewModel()) {
     //TODO: check if collectAsStateWithLifecycle is better and solve dialog dismiss if yes
     val state by viewModel.state.collectAsState()
 
@@ -54,7 +54,7 @@ fun GameScreen(onBack: () -> Boolean, viewModel: GameViewModel = hiltViewModel()
                 confirmButton = {
                     Button(onClick = {
                         viewModel.onWinDialogDismiss()
-                        onBack()
+                        output.onBack()
                     }) { Text("Back") }
                 },
                 dismissButton = {
@@ -67,7 +67,7 @@ fun GameScreen(onBack: () -> Boolean, viewModel: GameViewModel = hiltViewModel()
     }
 
     Scaffold(
-            topBar = { GameTopBar(state, onBack, viewModel) }
+            topBar = { GameTopBar(state, { output.onBack() }, viewModel) }
     ) { innerPadding ->
         Box(Modifier
                 .padding(innerPadding)
@@ -184,6 +184,10 @@ fun AnimatedBorderCell(isConflict: Boolean, baseColor: Color, content: @Composab
     ) {
         content()
     }
+}
+
+interface GameScreenOutput {
+    fun onBack(): Boolean
 }
 
 //TODO: replace these with svgs

@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -48,11 +49,11 @@ class GameViewModel @Inject constructor(
     private fun startTimer() {
         _timer.value = 0L
         _startTime = System.currentTimeMillis()
+        _timerJob?.cancel()
         _timerJob = viewModelScope.launch {
-            while (true) {
-                val currentTime = System.currentTimeMillis()
-                _timer.value = currentTime - _startTime
-                delay(1000L)
+            while (isActive) {
+                _timer.value = System.currentTimeMillis() - _startTime
+                delay(100L)
             }
         }
     }
@@ -74,7 +75,7 @@ class GameViewModel @Inject constructor(
             saveGameResult()
         }
 
-        _state.value = _state.value.copy(board = uiBoard, showWinDialog = false)
+        _state.value = _state.value.copy(board = uiBoard, showWinDialog = win)
     }
 
     private fun saveGameResult() {
@@ -99,6 +100,7 @@ class GameViewModel @Inject constructor(
 
     fun resetGame() {
         _state.value = _initialState
+        _board.clear()
         startTimer()
     }
 }

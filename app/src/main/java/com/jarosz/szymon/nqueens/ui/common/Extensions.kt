@@ -6,13 +6,15 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.util.Locale
 
 fun Int.toBoardSizeFormat(): String = "${this}x${this}"
 
-fun Long.toDurationFormat(): String = "${this / 1000},${(this + 5) / 10 % 100}s"
+fun Long.toDurationFormat(): String = String.format(Locale.getDefault(), "%.2f", this / 1000f)
 
 fun Long.toDateFormat(): String {
     val date = Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault())
+
     return date.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
 }
 

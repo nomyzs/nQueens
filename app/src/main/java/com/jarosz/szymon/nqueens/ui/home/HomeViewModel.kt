@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 // TODO UI
-// TODO solve landscape
 // TODO solve reset button
 // TODO limit placing queens to board size
 // TODO animations

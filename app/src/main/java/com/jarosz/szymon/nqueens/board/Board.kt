@@ -53,7 +53,7 @@ class Board(val size: Int) {
         for (queen in _placedQueens) {
             val queenMoves = queen.getMoves(this)
 
-            for(otherQueen in _placedQueens){
+            for (otherQueen in _placedQueens) {
                 if (otherQueen != queen && queenMoves.contains(otherQueen.position)) {
                     conflicts.add(queen.position)
                     conflicts.add(otherQueen.position)
@@ -62,6 +62,10 @@ class Board(val size: Int) {
         }
 
         return conflicts
+    }
+
+    fun clear() {
+        _placedQueens.clear()
     }
 }
 

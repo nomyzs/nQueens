@@ -8,7 +8,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.jarosz.szymon.nqueens.ui.game.GameScreen
+import com.jarosz.szymon.nqueens.ui.game.GameScreenOutput
 import com.jarosz.szymon.nqueens.ui.home.HomeScreen
+import com.jarosz.szymon.nqueens.ui.home.HomeScreenOutput
 
 sealed class Screen(val route: String) {
     data object Home : Screen("home")
@@ -20,14 +22,23 @@ sealed class Screen(val route: String) {
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
     NavHost(navController = navController, startDestination = Screen.Home.route) {
+        val homeOutput = object : HomeScreenOutput {
+            override fun onStartGame(boardSize: Int) =
+                    navController.navigate(Screen.Game.createRoute(boardSize))
+        }
+        val gameOutput = object : GameScreenOutput {
+            override fun onBack(): Boolean = navController.popBackStack()
+        }
+
         composable(Screen.Home.route) {
-            HomeScreen(onStartGame = { navController.navigate(Screen.Game.createRoute(it)) })
+            HomeScreen(homeOutput)
         }
         composable(
                 Screen.Game.route,
                 arguments = listOf(navArgument("boardSize") { type = NavType.IntType }),
         ) { _ ->
-            GameScreen(onBack = { navController.popBackStack() })
+            GameScreen(gameOutput)
         }
     }
 }
+
