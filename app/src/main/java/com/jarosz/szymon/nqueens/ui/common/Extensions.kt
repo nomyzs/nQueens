@@ -1,6 +1,7 @@
 package com.jarosz.szymon.nqueens.ui.common
 
-import com.jarosz.szymon.nqueens.board.Board
+import com.jarosz.szymon.nqueens.board.BoardEngine
+import com.jarosz.szymon.nqueens.board.Position
 import com.jarosz.szymon.nqueens.ui.game.Cell
 import java.time.Instant
 import java.time.ZoneId
@@ -18,10 +19,10 @@ fun Long.toDateFormat(): String {
     return date.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
 }
 
-//TODO: perhaps move to State class
-fun Board.toUIBoard(): List<Cell> {
-    val cells = size.generateBoard()
-    val conflicts = getConflicts()
+// [BoardEngine] extensions
+
+fun BoardEngine.toUIBoard(conflicts: List<Position>): List<Cell> {
+    val cells = size.generateUIBoard()
 
     return cells.map {
         it.copy(
@@ -31,6 +32,9 @@ fun Board.toUIBoard(): List<Cell> {
     }
 }
 
-fun Int.generateBoard(): List<Cell> = List(this * this) { index ->
-    Cell(row = index / this, col = index % this)
+fun BoardEngine.isGameCompleted(conflicts: List<Position>): Boolean =
+        conflicts.isEmpty() && placedQueens.size == size
+
+fun Int.generateUIBoard(): List<Cell> = List(this * this) { index ->
+    Cell(Position(row = index / this, col = index % this))
 }

@@ -13,13 +13,10 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 // TODO UI
-// TODO solve reset button
-// TODO limit placing queens to board size
 // TODO animations
 // TODO screen transitions
 // TODO sfx
 // TODO tests
-// TODO reset button
 // TODO Readme file
 // TODO Record video
 // TODO explore more backStackEntry in appNav

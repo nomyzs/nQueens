@@ -3,11 +3,12 @@ package com.jarosz.szymon.nqueens.ui.game
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jarosz.szymon.nqueens.board.Board
+import com.jarosz.szymon.nqueens.board.BoardEngine
 import com.jarosz.szymon.nqueens.board.Position
 import com.jarosz.szymon.nqueens.data.GameResult
 import com.jarosz.szymon.nqueens.data.ResultsRepository
-import com.jarosz.szymon.nqueens.ui.common.generateBoard
+import com.jarosz.szymon.nqueens.ui.common.generateUIBoard
+import com.jarosz.szymon.nqueens.ui.common.isGameCompleted
 import com.jarosz.szymon.nqueens.ui.common.toUIBoard
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -30,7 +31,7 @@ class GameViewModel @Inject constructor(
     private val _boardSize: Int = checkNotNull(savedStateHandle["boardSize"])
     private val _state = MutableStateFlow(_initialState)
     private val _timer = MutableStateFlow(0L)
-    private val _board = Board(_boardSize)
+    private val _boardEngine = BoardEngine(_boardSize)
 
     val state: StateFlow<GameState> = combine(_state, _timer) { gameState, time ->
         gameState.copy(board = gameState.board, time = time)
@@ -44,7 +45,7 @@ class GameViewModel @Inject constructor(
     }
 
     private val _initialState: GameState
-        get() = GameState(_boardSize, _boardSize.generateBoard())
+        get() = GameState(_boardSize, _boardSize.generateUIBoard())
 
     private fun startTimer() {
         _timer.value = 0L
@@ -59,23 +60,26 @@ class GameViewModel @Inject constructor(
     }
 
     fun placeQueen(cell: Cell) {
-        if (_board.hasQueen(cell.position)) {
-            _board.removeQueen(cell.position)
+        if (_boardEngine.hasQueen(cell.position)) {
+            _boardEngine.removeQueen(cell.position)
+        } else if (_boardEngine.placedQueens.size < _boardSize) {
+            _boardEngine.addQueen(cell.position)
         } else {
-            _board.addQueen(cell.position)
+            return
         }
 
-        val uiBoard = _board.toUIBoard()
+        // Conflicts extracted here to be calculated only once
+        val conflicts = _boardEngine.getConflicts()
+        val completed = _boardEngine.isGameCompleted(conflicts)
 
-        val win = checkWin(uiBoard)
-        if (win) {
+        if (completed) {
             _timerJob?.cancel()
             val currentTime = System.currentTimeMillis()
             _timer.value = currentTime - _startTime
             saveGameResult()
         }
 
-        _state.value = _state.value.copy(board = uiBoard, showWinDialog = win)
+        _state.value = _state.value.copy(board = _boardEngine.toUIBoard(conflicts), showWinDialog = completed)
     }
 
     private fun saveGameResult() {
@@ -88,19 +92,13 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    private fun checkWin(board: List<Cell>): Boolean {
-        val queens = board.filter { it.hasQueen && !it.isConflict }
-
-        return queens.size == _boardSize
-    }
-
     fun onWinDialogDismiss() {
         _state.value = _state.value.copy(showWinDialog = false)
     }
 
     fun resetGame() {
         _state.value = _initialState
-        _board.clear()
+        _boardEngine.clear()
         startTimer()
     }
 }
@@ -116,8 +114,9 @@ data class GameState(
 }
 
 data class Cell(
-        val row: Int, val col: Int, val hasQueen: Boolean = false, val isConflict: Boolean = false, val highlight: Boolean = false,
-) {
-    val position: Position = Position(row, col)
-}
+        val position: Position,
+        val hasQueen: Boolean = false,
+        val isConflict: Boolean = false,
+        val highlight: Boolean = false,
+)
 

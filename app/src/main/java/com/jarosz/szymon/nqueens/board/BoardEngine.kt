@@ -3,10 +3,10 @@ package com.jarosz.szymon.nqueens.board
 data class Position(val row: Int, val col: Int)
 
 class Queen(val position: Position) {
-    fun getMoves(board: Board): List<Position> {
+    fun getMoves(boardEngine: BoardEngine): List<Position> {
         val directions = orthogonalDirections + diagonalDirections
         val moves = mutableListOf<Position>()
-        val maxSteps = board.size - 1
+        val maxSteps = boardEngine.size - 1
 
         for (direction in directions) {
             var step = 1
@@ -14,7 +14,7 @@ class Queen(val position: Position) {
             var nextCol = position.col + direction.colDelta
             var nextPosition = Position(nextRow, nextCol)
 
-            while (step <= maxSteps && board.isInside(nextPosition)) {
+            while (step <= maxSteps && boardEngine.isInside(nextPosition)) {
                 moves.add(Position(nextRow, nextCol))
                 step++
                 nextRow += direction.rowDelta
@@ -27,8 +27,7 @@ class Queen(val position: Position) {
     }
 }
 
-class Board(val size: Int) {
-
+class BoardEngine(val size: Int) {
     private val _placedQueens = mutableListOf<Queen>()
 
     val placedQueens: List<Queen> get() = _placedQueens
@@ -81,7 +80,6 @@ val diagonalDirections = listOf(
         Direction.DOWN_LEFT,
         Direction.DOWN_RIGHT,
 )
-
 
 enum class Direction(val rowDelta: Int, val colDelta: Int) {
     UP(-1, 0),

@@ -145,8 +145,8 @@ fun Board(state: GameState, onPlaceQueen: (cell: Cell) -> Unit) {
     ) {
         items(state.board.size) { index ->
             val cell = state.board[index]
-            val row = cell.row
-            val col = cell.col
+            val row = cell.position.row
+            val col = cell.position.col
             val isLightSquare = (row + col) % 2 == 0
 
             AnimatedBorderCell(cell.isConflict, if (isLightSquare) Color.LightGray else Color.DarkGray) {
