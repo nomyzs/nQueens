@@ -7,18 +7,18 @@ import com.jarosz.szymon.nqueens.board.BoardEngine
 import com.jarosz.szymon.nqueens.board.Position
 import com.jarosz.szymon.nqueens.data.GameResult
 import com.jarosz.szymon.nqueens.data.ResultsRepository
+import com.jarosz.szymon.nqueens.domain.Timer
 import com.jarosz.szymon.nqueens.ui.common.generateUIBoard
 import com.jarosz.szymon.nqueens.ui.common.isGameCompleted
 import com.jarosz.szymon.nqueens.ui.common.toUIBoard
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,17 +30,13 @@ class GameViewModel @Inject constructor(
 ) : ViewModel() {
     private val _boardSize: Int = checkNotNull(savedStateHandle["boardSize"])
     private val _state = MutableStateFlow(_initialState)
-    private val _timer = MutableStateFlow(0L)
     private val _boardEngine = BoardEngine(_boardSize)
+    private val _timer = Timer(Dispatchers.IO)
 
-    val state: StateFlow<GameState> = combine(_state, _timer) { gameState, time ->
-        gameState.copy(board = gameState.board, time = time)
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, _initialState)
-
-    private var _startTime: Long = System.currentTimeMillis()
-    private var _timerJob: Job? = null
+    val state: StateFlow<GameState> = _state.stateIn(viewModelScope, SharingStarted.Eagerly, _initialState)
 
     init {
+        _timer.ticker.onEach { _state.value = _state.value.copy(time = it) }.launchIn(viewModelScope)
         startTimer()
     }
 
@@ -48,22 +44,14 @@ class GameViewModel @Inject constructor(
         get() = GameState(_boardSize, _boardSize.generateUIBoard())
 
     private fun startTimer() {
-        _timer.value = 0L
-        _startTime = System.currentTimeMillis()
-        _timerJob?.cancel()
-        _timerJob = viewModelScope.launch {
-            while (isActive) {
-                _timer.value = System.currentTimeMillis() - _startTime
-                delay(100L)
-            }
-        }
+        _timer.start()
     }
 
-    fun placeQueen(cell: Cell) {
-        if (_boardEngine.hasQueen(cell.position)) {
-            _boardEngine.removeQueen(cell.position)
+    fun placeQueen(position: Position) {
+        if (_boardEngine.hasQueen(position)) {
+            _boardEngine.removeQueen(position)
         } else if (_boardEngine.placedQueens.size < _boardSize) {
-            _boardEngine.addQueen(cell.position)
+            _boardEngine.addQueen(position)
         } else {
             return
         }
@@ -73,21 +61,20 @@ class GameViewModel @Inject constructor(
         val completed = _boardEngine.isGameCompleted(conflicts)
 
         if (completed) {
-            _timerJob?.cancel()
-            val currentTime = System.currentTimeMillis()
-            _timer.value = currentTime - _startTime
-            saveGameResult()
+            _timer.stop()
+            saveGameResult(_state.value.time)
         }
 
-        _state.value = _state.value.copy(board = _boardEngine.toUIBoard(conflicts), showWinDialog = completed)
+        val board = _boardEngine.toUIBoard(conflicts)
+        _state.value = _state.value.copy(board = board, showWinDialog = completed)
     }
 
-    private fun saveGameResult() {
+    private fun saveGameResult(time: Long) {
         viewModelScope.launch {
             val bestResult = resultsRepo.bestResult(_boardSize)
 
-            if ((bestResult?.timeMillis ?: Long.MAX_VALUE) > _timer.value) {
-                resultsRepo.insertResult(GameResult(_boardSize, _startTime, _timer.value))
+            if ((bestResult?.timeMillis ?: Long.MAX_VALUE) > time) {
+                resultsRepo.insertResult(GameResult(_boardSize, System.currentTimeMillis(), time))
             }
         }
     }

@@ -86,7 +86,7 @@ fun GameScreen(output: GameScreenOutput, viewModel: GameViewModel = hiltViewMode
                         HeaderItem("Time:", state.time.toDurationFormat(), CLOCK)
                     }
                 }
-                Board(state, { viewModel.placeQueen(it) })
+                Board(state, { viewModel.placeQueen(it.position) })
             }
         }
     }
