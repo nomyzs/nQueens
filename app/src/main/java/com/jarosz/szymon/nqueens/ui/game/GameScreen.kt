@@ -42,7 +42,6 @@ import com.jarosz.szymon.nqueens.ui.common.GameCard
 import com.jarosz.szymon.nqueens.ui.common.toBoardSizeFormat
 import com.jarosz.szymon.nqueens.ui.common.toDurationFormat
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreen(onBack: () -> Boolean, viewModel: GameViewModel = hiltViewModel()) {
     //TODO: check if collectAsStateWithLifecycle is better and solve dialog dismiss if yes
@@ -68,43 +67,14 @@ fun GameScreen(onBack: () -> Boolean, viewModel: GameViewModel = hiltViewModel()
     }
 
     Scaffold(
-            topBar = {
-                CenterAlignedTopAppBar(
-                        title = {
-                            Row {
-                                Icon(imageVector = Icons.Default.Home, contentDescription = "Logo")
-                                Text(state.boardSize.toBoardSizeFormat())
-
-                            }
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = { onBack() }) {
-                                Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = "Back"
-                                )
-                            }
-                        },
-                        actions = {
-                            IconButton(
-                                    onClick = { viewModel.resetGame() }
-                            ) {
-                                Icon(
-                                        imageVector = Icons.Filled.Refresh,
-                                        contentDescription = "Reset"
-                                )
-                            }
-                        }
-                )
-            }
+            topBar = { GameTopBar(state, onBack, viewModel) }
     ) { innerPadding ->
         Box(Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
                 contentAlignment = Alignment.TopCenter) {
-            Column(
-                    modifier = Modifier.padding(16.dp)
-            ) {
+
+            Column(modifier = Modifier.padding(16.dp)) {
                 GameCard {
                     Row(
                             modifier = Modifier
@@ -116,11 +86,42 @@ fun GameScreen(onBack: () -> Boolean, viewModel: GameViewModel = hiltViewModel()
                         HeaderItem("Time:", state.time.toDurationFormat(), CLOCK)
                     }
                 }
-
                 Board(state, { viewModel.placeQueen(it) })
             }
         }
     }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun GameTopBar(state: GameState, onBack: () -> Boolean, viewModel: GameViewModel) {
+    CenterAlignedTopAppBar(
+            title = {
+                Row {
+                    Icon(imageVector = Icons.Default.Home, contentDescription = "Logo")
+                    Text(state.boardSize.toBoardSizeFormat())
+
+                }
+            },
+            navigationIcon = {
+                IconButton(onClick = { onBack() }) {
+                    Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                    )
+                }
+            },
+            actions = {
+                IconButton(
+                        onClick = { viewModel.resetGame() }
+                ) {
+                    Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = "Reset"
+                    )
+                }
+            }
+    )
 }
 
 @Composable
@@ -139,7 +140,6 @@ fun Board(state: GameState, onPlaceQueen: (cell: Cell) -> Unit) {
     LazyVerticalGrid(
             columns = GridCells.Fixed(state.boardSize),
             modifier = Modifier
-                    .fillMaxWidth()
                     .aspectRatio(1f)
                     .padding(16.dp)
     ) {
@@ -148,6 +148,7 @@ fun Board(state: GameState, onPlaceQueen: (cell: Cell) -> Unit) {
             val row = cell.row
             val col = cell.col
             val isLightSquare = (row + col) % 2 == 0
+
             AnimatedBorderCell(cell.isConflict, if (isLightSquare) Color.LightGray else Color.DarkGray) {
                 Box(
                         modifier = Modifier

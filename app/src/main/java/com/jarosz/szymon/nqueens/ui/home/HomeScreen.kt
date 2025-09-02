@@ -61,7 +61,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), onStartGame: (boardSi
                 Spacer(Modifier.height(16.dp))
                 GameSetup(state, viewModel, onStartGame)
                 Spacer(Modifier.height(16.dp))
-                GameCard({ BestTimes(state) })
+                GameCard { BestTimes(state) }
             }
         }
     }
@@ -116,7 +116,7 @@ private fun BestTimes(state: HomeState) {
                 val result = state.results[index]
                 Card(
                         Modifier.padding(vertical = 4.dp),
-                        border = if(state.boardSize == result.boardSize) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
+                        border = if (state.boardSize == result.boardSize) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
                         shape = MaterialTheme.shapes.medium) {
                     ListItem(
                             { Text(result.timestamp.toDateFormat()) },

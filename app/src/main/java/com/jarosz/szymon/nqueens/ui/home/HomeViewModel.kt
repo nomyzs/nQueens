@@ -15,6 +15,7 @@ import javax.inject.Inject
 // TODO UI
 // TODO solve landscape
 // TODO solve reset button
+// TODO limit placing queens to board size
 // TODO animations
 // TODO screen transitions
 // TODO sfx
@@ -24,6 +25,7 @@ import javax.inject.Inject
 // TODO Record video
 // TODO explore more backStackEntry in appNav
 // optional:
+// Zen master theme - tell tge stoy,
 // pagination
 @HiltViewModel
 class HomeViewModel @Inject constructor(resultsRepo: ResultsRepository) : ViewModel() {
