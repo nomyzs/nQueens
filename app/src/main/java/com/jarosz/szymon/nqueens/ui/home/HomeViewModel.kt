@@ -14,14 +14,14 @@ import javax.inject.Inject
 
 // TODO UI
 // TODO animations
+// TODO tests
 // TODO screen transitions
 // TODO sfx
-// TODO tests
 // TODO Readme file
 // TODO Record video
 // TODO explore more backStackEntry in appNav
 // optional:
-// Zen master theme - tell tge stoy,
+// Zen master theme - tell the story,
 // pagination
 @HiltViewModel
 class HomeViewModel @Inject constructor(resultsRepo: ResultsRepository) : ViewModel() {

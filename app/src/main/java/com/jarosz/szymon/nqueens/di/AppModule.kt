@@ -6,11 +6,14 @@ import com.jarosz.szymon.nqueens.data.AppDatabase
 import com.jarosz.szymon.nqueens.data.ResultsDao
 import com.jarosz.szymon.nqueens.data.ResultsRepository
 import com.jarosz.szymon.nqueens.data.ResultsRepositoryImpl
+import com.jarosz.szymon.nqueens.domain.Timer
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Singleton
 
 @Module
@@ -28,4 +31,11 @@ object AppModule {
 
     @Provides
     fun provideRepository(dao: ResultsDao): ResultsRepository = ResultsRepositoryImpl(dao)
+}
+
+@Module
+@InstallIn(ViewModelComponent::class)
+object TimerModule {
+    @Provides
+    fun provideTimer(): Timer = Timer(Dispatchers.IO)
 }

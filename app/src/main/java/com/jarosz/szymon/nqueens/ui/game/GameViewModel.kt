@@ -12,13 +12,11 @@ import com.jarosz.szymon.nqueens.ui.common.generateUIBoard
 import com.jarosz.szymon.nqueens.ui.common.isGameCompleted
 import com.jarosz.szymon.nqueens.ui.common.toUIBoard
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,26 +24,22 @@ import javax.inject.Inject
 @HiltViewModel
 class GameViewModel @Inject constructor(
         private val resultsRepo: ResultsRepository,
+        private val timer: Timer,
         savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val _boardSize: Int = checkNotNull(savedStateHandle["boardSize"])
     private val _state = MutableStateFlow(_initialState)
     private val _boardEngine = BoardEngine(_boardSize)
-    private val _timer = Timer(Dispatchers.IO)
 
-    val state: StateFlow<GameState> = _state.stateIn(viewModelScope, SharingStarted.Eagerly, _initialState)
+    val state: StateFlow<GameState> = _state.asStateFlow()
 
     init {
-        _timer.ticker.onEach { _state.value = _state.value.copy(time = it) }.launchIn(viewModelScope)
-        startTimer()
+        timer.ticker.onEach { _state.value = _state.value.copy(time = it) }.launchIn(viewModelScope)
+        timer.start(viewModelScope)
     }
 
     private val _initialState: GameState
         get() = GameState(_boardSize, _boardSize.generateUIBoard())
-
-    private fun startTimer() {
-        _timer.start()
-    }
 
     fun placeQueen(position: Position) {
         if (_boardEngine.hasQueen(position)) {
@@ -61,7 +55,7 @@ class GameViewModel @Inject constructor(
         val completed = _boardEngine.isGameCompleted(conflicts)
 
         if (completed) {
-            _timer.stop()
+            timer.stop()
             saveGameResult(_state.value.time)
         }
 
@@ -86,7 +80,7 @@ class GameViewModel @Inject constructor(
     fun resetGame() {
         _state.value = _initialState
         _boardEngine.clear()
-        startTimer()
+        timer.start(viewModelScope)
     }
 }
 
