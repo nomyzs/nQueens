@@ -15,19 +15,9 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestCoroutineScheduler
-import kotlinx.coroutines.test.TestDispatcher
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -35,41 +25,25 @@ import org.junit.Before
 import org.junit.Test
 
 class GameViewModelTest {
-
-    private lateinit var scheduler: TestCoroutineScheduler
-    private lateinit var dispatcher: TestDispatcher
-    private lateinit var scope: TestScope
+    private val testDispatcher = StandardTestDispatcher()
 
     private lateinit var viewModel: GameViewModel
-    private val testDispatcher = StandardTestDispatcher()
-    lateinit var testScope: TestScope
 
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val resultsRepo = mockk<ResultsRepository>()
 
     @Before
     fun setup() {
-        scheduler = TestCoroutineScheduler()
-        dispatcher = StandardTestDispatcher(scheduler, name = "OwnDispatcher")
-        scope = TestScope(dispatcher)
-
         mockkStatic("androidx.navigation.SavedStateHandleKt")
         every { savedStateHandle.get<Int>("boardSize") } returns 4
-        testScope = TestScope(testDispatcher)
-        Dispatchers.setMain(testDispatcher)
 
-        val timer = TimerImpl(testDispatcher, testScope.backgroundScope)
+        val timer = TimerImpl(testDispatcher)
         viewModel = GameViewModel(resultsRepo, timer, savedStateHandle)
     }
 
-    @After
-    fun cleanUp() {
-        scope.cancel()
-        Dispatchers.resetMain()
-    }
 
     @Test
-    fun `initial state has correct board size`() = runTest(scheduler) {
+    fun `initial state has correct board size`() = runTest(testDispatcher) {
         val state = viewModel.state.value
         assertEquals(4, state.boardSize)
         assertEquals(0, state.placedQueensCount)
@@ -77,17 +51,16 @@ class GameViewModelTest {
     }
 
     @Test
-    fun `placeQueen adds queen and updates state`() = runTest(scheduler) {
+    fun `placeQueen adds queen and updates state`() = runTest(testDispatcher) {
         val pos = Position(0, 0)
         viewModel.placeQueen(pos)
-        elapseABit()
         val state = viewModel.state.value
         assertEquals(1, state.placedQueensCount)
         assertTrue(state.board.any { it.position == pos && it.hasQueen })
     }
 
     @Test
-    fun `placeQueen removes queen if already present`() = runTest(scheduler) {
+    fun `placeQueen removes queen if already present`() = runTest(testDispatcher) {
         val stateFlow = viewModel.state.test(backgroundScope)
         val pos = Position(0, 0)
 
@@ -109,7 +82,6 @@ class GameViewModelTest {
         viewModel.placeQueen(Position(2, 0))
         viewModel.placeQueen(Position(3, 2))
 
-        elapseABit()
         val state = viewModel.state.value
         assertTrue(state.showWinDialog)
 
@@ -117,13 +89,8 @@ class GameViewModelTest {
     }
 
     @Test
-    fun `onWinDialogDismiss hides dialog`() = runTest(scheduler) {
+    fun `onWinDialogDismiss hides dialog`() = runTest(testDispatcher) {
         viewModel.onWinDialogDismiss()
         assertFalse(viewModel.state.value.showWinDialog)
-    }
-
-    private fun TestScope.elapseABit() {
-        advanceTimeBy(1000L)
-        runCurrent()
     }
 }

@@ -16,10 +16,7 @@ interface Timer {
     val ticker: Flow<Long>
 }
 
-class TimerImpl @Inject constructor(
-        private val dispatcher: CoroutineDispatcher,
-        private val testScope: CoroutineScope? = null
-) : Timer {
+class TimerImpl @Inject constructor(private val dispatcher: CoroutineDispatcher) : Timer {
     private var job: Job? = null
     private val _ticker = MutableSharedFlow<Long>()
     private var elapsed: Long = 0L
@@ -28,7 +25,7 @@ class TimerImpl @Inject constructor(
         get() = _ticker
 
     override fun start(viewModelScope: CoroutineScope) {
-        val scope = testScope ?: viewModelScope
+        val scope = viewModelScope
 
         stop()
         elapsed = 0L

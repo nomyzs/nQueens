@@ -8,13 +8,21 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TimerTest {
+    private val testDispatcher = StandardTestDispatcher()
+    private lateinit var timer: TimerImpl
+
+    @Before
+    fun setup() {
+        timer = TimerImpl(testDispatcher)
+    }
+
     @Test
-    fun `timer emits correct elapsed time after advancing time`() = runTest {
-        val timer = TimerImpl(StandardTestDispatcher(this.testScheduler), this.backgroundScope)
+    fun `timer emits correct elapsed time after advancing time`() = runTest(testDispatcher) {
         val ticker = timer.ticker.test(this.backgroundScope)
 
         timer.start(this.backgroundScope)
@@ -26,8 +34,7 @@ class TimerTest {
     }
 
     @Test
-    fun `timer emits multiple ticks as time advances`() = runTest {
-        val timer = TimerImpl(StandardTestDispatcher(this.testScheduler))
+    fun `timer emits multiple ticks as time advances`() = runTest(testDispatcher) {
         val ticker = timer.ticker.test(backgroundScope)
         timer.start(this.backgroundScope)
 
@@ -39,8 +46,7 @@ class TimerTest {
     }
 
     @Test
-    fun `timer stops emitting after stop is called`() = runTest {
-        val timer = TimerImpl(StandardTestDispatcher(this.testScheduler))
+    fun `timer stops emitting after stop is called`() = runTest(testDispatcher) {
         val ticker = timer.ticker.test(backgroundScope)
         timer.start(this.backgroundScope)
 
