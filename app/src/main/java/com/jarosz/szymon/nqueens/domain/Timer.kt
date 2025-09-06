@@ -10,17 +10,24 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class Timer @Inject constructor(
+interface Timer {
+    fun start(viewModelScope: CoroutineScope)
+    fun stop()
+    val ticker: Flow<Long>
+}
+
+class TimerImpl @Inject constructor(
         private val dispatcher: CoroutineDispatcher,
         private val testScope: CoroutineScope? = null
-) {
+) : Timer {
     private var job: Job? = null
     private val _ticker = MutableSharedFlow<Long>()
-    val ticker: Flow<Long> = _ticker
     private var elapsed: Long = 0L
 
+    override val ticker: Flow<Long>
+        get() = _ticker
 
-    fun start(viewModelScope: CoroutineScope) {
+    override fun start(viewModelScope: CoroutineScope) {
         val scope = testScope ?: viewModelScope
 
         stop()
@@ -34,7 +41,7 @@ class Timer @Inject constructor(
         }
     }
 
-    fun stop() {
+    override fun stop() {
         job?.cancel()
     }
 }

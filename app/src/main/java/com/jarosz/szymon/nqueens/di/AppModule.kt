@@ -7,6 +7,7 @@ import com.jarosz.szymon.nqueens.data.ResultsDao
 import com.jarosz.szymon.nqueens.data.ResultsRepository
 import com.jarosz.szymon.nqueens.data.ResultsRepositoryImpl
 import com.jarosz.szymon.nqueens.domain.Timer
+import com.jarosz.szymon.nqueens.domain.TimerImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -37,5 +38,5 @@ object AppModule {
 @InstallIn(ViewModelComponent::class)
 object TimerModule {
     @Provides
-    fun provideTimer(): Timer = Timer(Dispatchers.IO)
+    fun provideTimer(): Timer = TimerImpl(Dispatchers.IO)
 }

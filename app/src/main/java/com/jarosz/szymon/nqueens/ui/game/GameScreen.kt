@@ -35,12 +35,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jarosz.szymon.nqueens.ui.common.GameCard
 import com.jarosz.szymon.nqueens.ui.common.toBoardSizeFormat
 import com.jarosz.szymon.nqueens.ui.common.toDurationFormat
+import com.jarosz.szymon.nqueens.ui.theme.NQueensTheme
 
 @Composable
 fun GameScreen(output: GameScreenOutput, viewModel: GameViewModel = hiltViewModel()) {
@@ -66,8 +68,17 @@ fun GameScreen(output: GameScreenOutput, viewModel: GameViewModel = hiltViewMode
         )
     }
 
+    GameBody(state, output, viewModel::resetGame, { viewModel.placeQueen(it.position) })
+}
+
+@Composable
+private fun GameBody(
+        state: GameState, output: GameScreenOutput, onResetGame: () -> Unit, onPlaceQueen: (Cell) -> Unit,
+) {
     Scaffold(
-            topBar = { GameTopBar(state, { output.onBack() }, viewModel) }
+            topBar = {
+                GameTopBar(state, { output.onBack() }, onResetGame)
+            }
     ) { innerPadding ->
         Box(Modifier
                 .padding(innerPadding)
@@ -86,7 +97,7 @@ fun GameScreen(output: GameScreenOutput, viewModel: GameViewModel = hiltViewMode
                         HeaderItem("Time:", state.time.toDurationFormat(), CLOCK)
                     }
                 }
-                Board(state, { viewModel.placeQueen(it.position) })
+                Board(state, onPlaceQueen)
             }
         }
     }
@@ -94,7 +105,7 @@ fun GameScreen(output: GameScreenOutput, viewModel: GameViewModel = hiltViewMode
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun GameTopBar(state: GameState, onBack: () -> Boolean, viewModel: GameViewModel) {
+private fun GameTopBar(state: GameState, onBack: () -> Boolean, onResetGame: () -> Unit) {
     CenterAlignedTopAppBar(
             title = {
                 Row {
@@ -112,9 +123,7 @@ private fun GameTopBar(state: GameState, onBack: () -> Boolean, viewModel: GameV
                 }
             },
             actions = {
-                IconButton(
-                        onClick = { viewModel.resetGame() }
-                ) {
+                IconButton(onClick = onResetGame) {
                     Icon(
                             imageVector = Icons.Filled.Refresh,
                             contentDescription = "Reset"
@@ -183,6 +192,23 @@ fun AnimatedBorderCell(isConflict: Boolean, baseColor: Color, content: @Composab
                     .border(width = 2.dp, color = borderColor, shape = AbsoluteRoundedCornerShape(size = 8.dp))
     ) {
         content()
+    }
+}
+
+@Preview
+@Composable
+private fun GameScreenPreview() {
+    NQueensTheme {
+        GameBody(
+                state = GameState(4),
+                output = object : GameScreenOutput {
+                    override fun onBack(): Boolean {
+                        return true
+                    }
+                },
+                onResetGame = {},
+                onPlaceQueen = {}
+        )
     }
 }
 

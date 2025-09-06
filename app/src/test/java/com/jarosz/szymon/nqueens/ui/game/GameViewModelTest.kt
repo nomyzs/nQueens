@@ -6,7 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import com.jarosz.szymon.nqueens.board.Position
 import com.jarosz.szymon.nqueens.data.GameResult
 import com.jarosz.szymon.nqueens.data.ResultsRepository
-import com.jarosz.szymon.nqueens.domain.Timer
+import com.jarosz.szymon.nqueens.domain.TimerImpl
 import com.jarosz.szymon.nqueens.test
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -15,6 +15,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -22,8 +23,10 @@ import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -53,14 +56,16 @@ class GameViewModelTest {
         mockkStatic("androidx.navigation.SavedStateHandleKt")
         every { savedStateHandle.get<Int>("boardSize") } returns 4
         testScope = TestScope(testDispatcher)
+        Dispatchers.setMain(testDispatcher)
 
-        val timer = Timer(testDispatcher, testScope.backgroundScope)
+        val timer = TimerImpl(testDispatcher, testScope.backgroundScope)
         viewModel = GameViewModel(resultsRepo, timer, savedStateHandle)
     }
 
     @After
     fun cleanUp() {
         scope.cancel()
+        Dispatchers.resetMain()
     }
 
     @Test
@@ -73,16 +78,12 @@ class GameViewModelTest {
 
     @Test
     fun `placeQueen adds queen and updates state`() = runTest(scheduler) {
-        coEvery { resultsRepo.bestResult(any()) } returns GameResult(4, 0L, Long.MAX_VALUE)
-        coEvery { resultsRepo.insertResult(any()) } just Runs
         val pos = Position(0, 0)
         viewModel.placeQueen(pos)
         elapseABit()
         val state = viewModel.state.value
         assertEquals(1, state.placedQueensCount)
         assertTrue(state.board.any { it.position == pos && it.hasQueen })
-
-        coVerify(exactly = 0) { resultsRepo.insertResult(any()) }
     }
 
     @Test

@@ -1,6 +1,5 @@
 package com.jarosz.szymon.nqueens.domain
 
-import com.jarosz.szymon.nqueens.FlowTestObserver
 import com.jarosz.szymon.nqueens.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -15,7 +14,7 @@ import org.junit.Test
 class TimerTest {
     @Test
     fun `timer emits correct elapsed time after advancing time`() = runTest {
-        val timer = Timer(StandardTestDispatcher(this.testScheduler), this.backgroundScope)
+        val timer = TimerImpl(StandardTestDispatcher(this.testScheduler), this.backgroundScope)
         val ticker = timer.ticker.test(this.backgroundScope)
 
         timer.start(this.backgroundScope)
@@ -28,7 +27,7 @@ class TimerTest {
 
     @Test
     fun `timer emits multiple ticks as time advances`() = runTest {
-        val timer = Timer(StandardTestDispatcher(this.testScheduler))
+        val timer = TimerImpl(StandardTestDispatcher(this.testScheduler))
         val ticker = timer.ticker.test(backgroundScope)
         timer.start(this.backgroundScope)
 
@@ -41,7 +40,7 @@ class TimerTest {
 
     @Test
     fun `timer stops emitting after stop is called`() = runTest {
-        val timer = Timer(StandardTestDispatcher(this.testScheduler))
+        val timer = TimerImpl(StandardTestDispatcher(this.testScheduler))
         val ticker = timer.ticker.test(backgroundScope)
         timer.start(this.backgroundScope)
 
