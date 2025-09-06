@@ -7,24 +7,29 @@ import com.jarosz.szymon.nqueens.board.BoardEngine
 import com.jarosz.szymon.nqueens.board.Position
 import com.jarosz.szymon.nqueens.data.GameResult
 import com.jarosz.szymon.nqueens.data.ResultsRepository
+import com.jarosz.szymon.nqueens.di.DefaultDispatcher
 import com.jarosz.szymon.nqueens.domain.Timer
 import com.jarosz.szymon.nqueens.ui.common.generateUIBoard
 import com.jarosz.szymon.nqueens.ui.common.isGameCompleted
 import com.jarosz.szymon.nqueens.ui.common.toUIBoard
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import javax.inject.Named
 
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
         private val resultsRepo: ResultsRepository,
         private val timer: Timer,
+        @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
         savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val _boardSize: Int = checkNotNull(savedStateHandle["boardSize"])
@@ -34,7 +39,9 @@ class GameViewModel @Inject constructor(
     val state: StateFlow<GameState> = _state.asStateFlow()
 
     init {
-        timer.ticker.onEach { _state.value = _state.value.copy(time = it) }.launchIn(viewModelScope)
+        timer.ticker.onEach { _state.value = _state.value.copy(time = it) }
+                .flowOn(defaultDispatcher)
+                .launchIn(viewModelScope)
         timer.start(viewModelScope)
     }
 
