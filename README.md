@@ -15,6 +15,11 @@ An Android app for solving the classic N-Queens puzzle. The goal is to place N q
 
 ## Architecture & Patterns
 
+### Game Engine
+
+Decided on the approach that is simple and easy to understand, rather than the most optimal one. The board maximum size is 20x20, so performance is was not a concern.
+The board logic is encapsulated in the [BoardEngine.kt](java/com/jarosz/szymon/nqueens/board/BoardEngine.kt) class and NQueens game rules are implemented in [GameViewModel.kt](java/com/jarosz/szymon/nqueens/ui/game/GameViewModel.kt)
+
 ### MVVM (Model-View-ViewModel)
 
 The app uses the MVVM pattern to separate UI logic from business logic:
@@ -42,7 +47,7 @@ State flows from ViewModel to UI, and user events flow back to ViewModel. This m
 
 ### Navigation
 
-Navigation is handled via Jetpack Compose Navigation, with type-safe routes and animated transitions.
+Navigation is handled via Jetpack Compose Navigation.
 
 ## Reasoning Behind Choices
 
@@ -54,7 +59,7 @@ Navigation is handled via Jetpack Compose Navigation, with type-safe routes and 
 
 ## Code generation and AI
 
-AI code generation used only for finding solutions or generating boilerplate code, auto-completion, this README file and narration for video :) 
+AI tools and generation used mostly for finding solutions, generating boilerplate code, auto-completion, this README file and narration for video :) 
 
 ## Testing
 
