@@ -133,6 +133,6 @@ private fun BestTimes(state: HomeState) {
     }
 }
 
-interface HomeScreenOutput {
+fun interface HomeScreenOutput {
     fun onStartGame(boardSize: Int)
 }

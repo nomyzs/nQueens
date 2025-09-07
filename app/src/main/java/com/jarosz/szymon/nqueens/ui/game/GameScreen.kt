@@ -1,21 +1,12 @@
 package com.jarosz.szymon.nqueens.ui.game
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.SpringSpec
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
@@ -34,12 +25,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jarosz.szymon.nqueens.board.Position
 import com.jarosz.szymon.nqueens.ui.common.GameCard
+import com.jarosz.szymon.nqueens.ui.common.generateUIBoard
 import com.jarosz.szymon.nqueens.ui.common.toBoardSizeFormat
 import com.jarosz.szymon.nqueens.ui.common.toDurationFormat
 import com.jarosz.szymon.nqueens.ui.theme.NQueensTheme
@@ -69,38 +61,6 @@ fun GameScreen(output: GameScreenOutput, viewModel: GameViewModel = hiltViewMode
     }
 
     GameBody(state, output, viewModel::resetGame, { viewModel.placeQueen(it.position) })
-}
-
-@Composable
-private fun GameBody(
-        state: GameState, output: GameScreenOutput, onResetGame: () -> Unit, onPlaceQueen: (Cell) -> Unit,
-) {
-    Scaffold(
-            topBar = {
-                GameTopBar(state, { output.onBack() }, onResetGame)
-            }
-    ) { innerPadding ->
-        Box(Modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-                contentAlignment = Alignment.TopCenter) {
-
-            Column(modifier = Modifier.padding(16.dp)) {
-                GameCard {
-                    Row(
-                            modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        HeaderItem("Queens:", "${state.placedQueensCount}/${state.boardSize}", QUEEN)
-                        HeaderItem("Time:", state.time.toDurationFormat(), CLOCK)
-                    }
-                }
-                Board(state, onPlaceQueen)
-            }
-        }
-    }
 }
 
 @Composable
@@ -134,85 +94,81 @@ private fun GameTopBar(state: GameState, onBack: () -> Boolean, onResetGame: () 
 }
 
 @Composable
-private fun HeaderItem(title: String, value: String, icon: String? = null) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Row {
-            icon?.let { Text(icon, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary) }
-            Text(title, style = MaterialTheme.typography.labelSmall)
-        }
-        Text(value, style = MaterialTheme.typography.titleLarge)
-    }
-}
+private fun GameBody(
+        state: GameState,
+        output: GameScreenOutput,
+        onResetGame: () -> Unit,
+        onPlaceQueen: (Cell) -> Unit,
+) {
+    Scaffold(
+            topBar = {
+                GameTopBar(state, { output.onBack() }, onResetGame)
+            }
+    ) { innerPadding ->
+        Box(
+                Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize(),
+                contentAlignment = Alignment.TopCenter
+        ) {
 
-@Composable
-fun Board(state: GameState, onPlaceQueen: (cell: Cell) -> Unit) {
-    LazyVerticalGrid(
-            columns = GridCells.Fixed(state.boardSize),
-            modifier = Modifier
-                    .aspectRatio(1f)
-                    .padding(16.dp)
-    ) {
-        items(state.board.size) { index ->
-            val cell = state.board[index]
-            val row = cell.position.row
-            val col = cell.position.col
-            val isLightSquare = (row + col) % 2 == 0
-
-            AnimatedBorderCell(cell.isConflict, if (isLightSquare) Color.LightGray else Color.DarkGray) {
-                Box(
-                        modifier = Modifier
-                                .background(if (isLightSquare) Color.LightGray else Color.DarkGray)
-                                .aspectRatio(1f)
-                                .clickable { onPlaceQueen(cell) }
-                ) {
-                    if (cell.hasQueen) {
-                        Text(
-                                QUEEN,
-                                modifier = Modifier.align(Alignment.Center),
-                                color = if (cell.isConflict) Color.Red else if (isLightSquare) Color.Black else Color.White,
-                                fontSize = 24.sp
+            Column(modifier = Modifier.padding(16.dp)) {
+                GameCard {
+                    Row(
+                            modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        HeaderItem(
+                                "Queens:",
+                                "${state.placedQueensCount}/${state.boardSize}",
+                                QUEEN
                         )
+                        HeaderItem("Time:", state.time.toDurationFormat(), CLOCK)
                     }
                 }
+                BoardView(state, onPlaceQueen)
             }
         }
     }
 }
 
 @Composable
-fun AnimatedBorderCell(isConflict: Boolean, baseColor: Color, content: @Composable () -> Unit) {
-    val borderColor by animateColorAsState(
-            targetValue = if (isConflict) Color.Red else baseColor,
-            label = "BorderColorAnimation",
-            animationSpec = SpringSpec()
-    )
-
-    Box(
-            modifier = Modifier
-                    .border(width = 2.dp, color = borderColor, shape = AbsoluteRoundedCornerShape(size = 8.dp))
-    ) {
-        content()
+private fun HeaderItem(title: String, value: String, icon: String? = null) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Row {
+            icon?.let {
+                Text(
+                        icon,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                )
+            }
+            Text(title, style = MaterialTheme.typography.labelSmall)
+        }
+        Text(value, style = MaterialTheme.typography.titleLarge)
     }
 }
 
+
 @Preview
 @Composable
-private fun GameScreenPreview() {
+private fun GameScreenPreview(
+        @PreviewParameter(GameStatePreviewProvider::class) state: GameState
+
+) {
     NQueensTheme {
         GameBody(
-                state = GameState(4),
-                output = object : GameScreenOutput {
-                    override fun onBack(): Boolean {
-                        return true
-                    }
-                },
+                state = state,
+                output = { false },
                 onResetGame = {},
                 onPlaceQueen = {}
         )
     }
 }
 
-interface GameScreenOutput {
+fun interface GameScreenOutput {
     fun onBack(): Boolean
 }
 

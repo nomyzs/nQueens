@@ -10,9 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.jarosz.szymon.nqueens.ui.game.GameScreen
-import com.jarosz.szymon.nqueens.ui.game.GameScreenOutput
 import com.jarosz.szymon.nqueens.ui.home.HomeScreen
-import com.jarosz.szymon.nqueens.ui.home.HomeScreenOutput
 
 sealed class Screen(val route: String) {
     data object Home : Screen("home")
@@ -24,31 +22,29 @@ sealed class Screen(val route: String) {
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
     NavHost(
-            navController = navController, startDestination = Screen.Home.route,
+        navController = navController, startDestination = Screen.Home.route,
 
-            ) {
-        val homeOutput = object : HomeScreenOutput {
-            override fun onStartGame(boardSize: Int) =
-                    navController.navigate(Screen.Game.createRoute(boardSize))
-        }
-        val gameOutput = object : GameScreenOutput {
-            override fun onBack(): Boolean = navController.popBackStack()
-        }
-
+        ) {
         composable(Screen.Home.route) {
-            HomeScreen(homeOutput)
+            HomeScreen({ boardSize -> navController.navigate(Screen.Game.createRoute(boardSize)) })
         }
         composable(
-                Screen.Game.route,
-                enterTransition = {
-                    slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up, tween(TRANSITION_DURATION))
-                },
-                exitTransition = {
-                    slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down, tween(TRANSITION_DURATION))
-                },
-                arguments = listOf(navArgument("boardSize") { type = NavType.IntType }),
+            Screen.Game.route,
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Up,
+                    tween(TRANSITION_DURATION)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Down,
+                    tween(TRANSITION_DURATION)
+                )
+            },
+            arguments = listOf(navArgument("boardSize") { type = NavType.IntType }),
         ) { _ ->
-            GameScreen(gameOutput)
+            GameScreen({ navController.popBackStack() })
         }
     }
 }
