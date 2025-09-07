@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import javax.inject.Named
 
 
 @HiltViewModel
@@ -80,7 +79,7 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    fun onWinDialogDismiss() {
+    fun winDialogDismiss() {
         _state.value = _state.value.copy(showWinDialog = false)
     }
 

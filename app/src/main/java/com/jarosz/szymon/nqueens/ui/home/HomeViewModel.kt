@@ -12,8 +12,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
-// TODO UI
-// TODO animations
 // TODO app icon
 // TODO sfx
 // TODO Readme file

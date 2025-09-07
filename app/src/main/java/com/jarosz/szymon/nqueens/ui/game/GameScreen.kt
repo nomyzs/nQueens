@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,125 +40,132 @@ import com.jarosz.szymon.nqueens.ui.common.toDurationFormat
 import com.jarosz.szymon.nqueens.ui.theme.NQueensTheme
 
 @Composable
-fun GameScreen(output: GameScreenOutput, viewModel: GameViewModel = hiltViewModel()) {
+fun GameScreen(
+    output: GameScreenOutput, viewModel: GameViewModel = hiltViewModel()
+) {
     //TODO: check if collectAsStateWithLifecycle is better and solve dialog dismiss if yes
     val state by viewModel.state.collectAsState()
 
-    if (state.showWinDialog) {
-        AlertDialog(
-                //TODO: remove dismiss request
-                onDismissRequest = { viewModel.onWinDialogDismiss() },
-                confirmButton = {
-                    Button(onClick = {
-                        viewModel.onWinDialogDismiss()
-                        output.onBack()
-                    }) { Text("Back") }
-                },
-                dismissButton = {
-                    Button(
-                            onClick = { viewModel.resetGame() }
-                    ) { Text("Play Again") }
-                },
-                title = { Text("You Win!") },
-        )
-    }
-
-    GameBody(state, output, viewModel::resetGame, { viewModel.placeQueen(it.position) })
+    GameBody(
+        state,
+        output,
+        { viewModel.resetGame() },
+        { viewModel.placeQueen(it.position) },
+        { viewModel.winDialogDismiss() },
+    )
 }
 
 @Composable
 private fun GameBody(
-        state: GameState,
-        output: GameScreenOutput,
-        onResetGame: () -> Unit,
-        onPlaceQueen: (Cell) -> Unit,
+    state: GameState,
+    output: GameScreenOutput,
+    onResetGame: () -> Unit,
+    onPlaceQueen: (Cell) -> Unit,
+    onWinDialogDismiss: () -> Unit,
 ) {
     Scaffold(
-            topBar = {
-                GameTopBar({ output.onBack() }, onResetGame)
-            }
-    ) { innerPadding ->
+        topBar = {
+            GameTopBar({ output.onBack() }, onResetGame)
+        }) { innerPadding ->
         Box(
-                Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize(),
-                contentAlignment = Alignment.TopCenter
+            Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            contentAlignment = Alignment.TopCenter
         ) {
-
-            Column(modifier = Modifier
+            Column(
+                modifier = Modifier
                     .padding(16.dp)
-                    .fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
                 GameInfo(state)
                 BoardView(state, onPlaceQueen)
                 Spacer(Modifier.fillMaxWidth())
             }
+            if (state.showWinDialog)
+                WinDialog(
+                    boardSize = state.boardSize,
+                    onDismiss = onWinDialogDismiss,
+                    onResetGame = onResetGame,
+                    onGoHome = {
+                        onWinDialogDismiss()
+                        output.onBack()
+                    },
+                )
         }
+
     }
 }
+
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun GameTopBar(onBack: () -> Boolean, onResetGame: () -> Unit) {
-    TopAppBar(
-            title = {},
-            navigationIcon = {
-                IconButton(onClick = { onBack() }) {
-                    Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                    )
-                }
-            },
-            actions = {
-                IconButton(onClick = onResetGame) {
-                    Icon(
-                            imageVector = Icons.Filled.Refresh,
-                            contentDescription = "Reset"
-                    )
-                }
-            }
-    )
+    TopAppBar(title = {}, navigationIcon = {
+        IconButton(onClick = { onBack() }) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back"
+            )
+        }
+    }, actions = {
+        IconButton(onClick = onResetGame) {
+            Icon(
+                imageVector = Icons.Filled.Refresh,
+                contentDescription = "Reset"
+            )
+        }
+    })
 }
 
 @Composable
 private fun GameInfo(state: GameState) {
     GameCard {
         Row(
-                modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
         ) {
             HeaderItem(
-                    title = "Queens:",
-                    modifier = Modifier.weight(1f),
-                    value = "${state.placedQueensCount}/${state.boardSize}",
-                    iconResId = R.drawable.chess_queen
+                title = "Queens:",
+                modifier = Modifier.weight(1f),
+                value = "${state.placedQueensCount}/${state.boardSize}",
+                iconResId = R.drawable.chess_queen
             )
             HeaderItem(
-                    title = "Board size:",
-                    value = state.boardSize.toBoardSizeFormat(),
-                    iconResId = R.drawable.chess_board,
-                    modifier = Modifier.weight(1f),
+                title = "Board size:",
+                value = state.boardSize.toBoardSizeFormat(),
+                iconResId = R.drawable.chess_board,
+                modifier = Modifier.weight(1f),
             )
             HeaderItem(
-                    modifier = Modifier.weight(1f),
-                    title = "Time:",
-                    value = state.time.toDurationFormat(), iconResId = R.drawable.clock,
+                modifier = Modifier.weight(1f),
+                title = "Time:",
+                value = state.time.toDurationFormat(),
+                iconResId = R.drawable.clock,
             )
         }
     }
 }
 
 @Composable
-private fun HeaderItem(title: String, value: String, @DrawableRes iconResId: Int? = null, modifier: Modifier) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
+private fun HeaderItem(
+    title: String,
+    value: String,
+    @DrawableRes iconResId: Int? = null,
+    modifier: Modifier
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             iconResId?.let {
                 Image(
-                        modifier = Modifier.size(16.dp),
-                        painter = painterResource(iconResId),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                    modifier = Modifier.size(16.dp),
+                    painter = painterResource(iconResId),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
                 )
                 Spacer(Modifier.size(4.dp))
             }
@@ -175,16 +180,16 @@ private fun HeaderItem(title: String, value: String, @DrawableRes iconResId: Int
 @Preview
 @Composable
 private fun GameScreenPreview(
-        @PreviewParameter(GameStatePreviewProvider::class) state: GameState
+    @PreviewParameter(GameStatePreviewProvider::class) state: GameState
 
 ) {
     NQueensTheme {
         GameBody(
-                state = state,
-                output = { false },
-                onResetGame = {},
-                onPlaceQueen = {}
-        )
+            state = state,
+            output = { false },
+            onResetGame = {},
+            onPlaceQueen = {},
+            onWinDialogDismiss = {})
     }
 }
 

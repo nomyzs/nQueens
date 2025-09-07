@@ -115,7 +115,7 @@ class GameViewModelTest {
         val state = viewModel.state.value
         assertTrue(state.showWinDialog)
 
-        viewModel.onWinDialogDismiss()
+        viewModel.winDialogDismiss()
 
         assertFalse(viewModel.state.value.showWinDialog)
     }
