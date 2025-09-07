@@ -1,6 +1,7 @@
 package com.jarosz.szymon.nqueens.ui.game
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.jarosz.szymon.nqueens.board.PieceType
 import com.jarosz.szymon.nqueens.board.Position
 
 class GameStatePreviewProvider : PreviewParameterProvider<GameState> {
@@ -33,7 +34,7 @@ class GameStatePreviewProvider : PreviewParameterProvider<GameState> {
             val pos = Position(row, col)
             Cell(
                 position = pos,
-                hasQueen = queenPositions.contains(pos),
+                hasQueen = queenPositions.any({ it == pos }),
                 isConflict = conflictPositions.contains(pos) && queenPositions.contains(
                     pos
                 )

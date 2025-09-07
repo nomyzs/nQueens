@@ -1,7 +1,11 @@
 package com.jarosz.szymon.nqueens.ui.common
 
+import com.jarosz.szymon.nqueens.R
 import com.jarosz.szymon.nqueens.board.BoardEngine
+import com.jarosz.szymon.nqueens.board.CellBasedBoardEngine
+import com.jarosz.szymon.nqueens.board.PieceType
 import com.jarosz.szymon.nqueens.board.Position
+import com.jarosz.szymon.nqueens.board.SimpleBoardEngine
 import com.jarosz.szymon.nqueens.ui.game.Cell
 import java.time.Instant
 import java.time.ZoneId
@@ -11,7 +15,8 @@ import java.util.Locale
 
 fun Int.toBoardSizeFormat(): String = "${this}x${this}"
 
-fun Long.toDurationFormat(): String = String.format(Locale.getDefault(), "%.2fs", this / 1000f)
+fun Long.toDurationFormat(): String =
+    String.format(Locale.getDefault(), "%.2fs", this / 1000f)
 
 fun Long.toDateFormat(): String {
     val date = Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault())
@@ -21,19 +26,31 @@ fun Long.toDateFormat(): String {
 
 // [BoardEngine] extensions
 
-fun BoardEngine.toUIBoard(conflicts: List<Position>): List<Cell> {
+fun CellBasedBoardEngine.toUIBoard(conflicts: List<Position>): List<Cell> {
+    return boardCells.map(
+        {
+            Cell(
+                position = it.position,
+                hasQueen = it.piece != null,
+                isConflict = conflicts.contains(it.position),
+            )
+        }
+    )
+}
+
+fun SimpleBoardEngine.toUIBoard(conflicts: List<Position>): List<Cell> {
     val cells = size.generateUIBoard()
 
     return cells.map {
         it.copy(
-                hasQueen = placedQueens.any { queen -> queen.position == it.position },
-                isConflict = conflicts.contains(it.position),
+            hasQueen = placedPieces.find { piece -> piece.position == it.position } != null,
+            isConflict = conflicts.contains(it.position),
         )
     }
 }
 
 fun BoardEngine.isGameCompleted(conflicts: List<Position>): Boolean =
-        conflicts.isEmpty() && placedQueens.size == size
+    conflicts.isEmpty() && placedPieces.size == size
 
 fun Int.generateUIBoard(): List<Cell> = List(this * this) { index ->
     Cell(Position(row = index / this, col = index % this))

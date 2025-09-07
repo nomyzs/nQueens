@@ -39,28 +39,32 @@ fun BoardView(state: GameState, onPlaceQueen: (cell: Cell) -> Unit) {
     val boardPadding = 2
 
     BoxWithConstraints(
-            modifier = Modifier
-                    .padding(16.dp)
-                    .border(2.dp, MaterialTheme.colorScheme.outlineVariant, shape = AbsoluteRoundedCornerShape(8.dp))
+        modifier = Modifier
+            .padding(16.dp)
+            .border(
+                2.dp,
+                MaterialTheme.colorScheme.outlineVariant,
+                shape = AbsoluteRoundedCornerShape(8.dp)
+            )
     ) {
         val size = minOf(maxWidth, maxHeight)
 
         Box(
-                modifier = Modifier
-                        .padding(boardPadding.dp)
-                        .size(size - boardPadding.dp * 2),
-                contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .padding(boardPadding.dp)
+                .size(size - boardPadding.dp * 2),
+            contentAlignment = Alignment.Center,
         ) {
             Column {
                 state.board.chunked(state.boardSize).forEach { row ->
                     Row(
-                            horizontalArrangement = Arrangement.Center,
+                        horizontalArrangement = Arrangement.Center,
                     ) {
                         row.forEach { cell ->
                             BoardCell(
-                                    cell,
-                                    (size - boardPadding.dp * 2) / state.boardSize,
-                                    onClick = { onPlaceQueen(cell) },
+                                cell,
+                                (size - boardPadding.dp * 2) / state.boardSize,
+                                onClick = { onPlaceQueen(cell) },
                             )
                         }
                     }
@@ -72,83 +76,84 @@ fun BoardView(state: GameState, onPlaceQueen: (cell: Cell) -> Unit) {
 
 @Composable
 fun BoardCell(
-        cell: Cell,
-        size: Dp,
-        onClick: () -> Unit,
+    cell: Cell,
+    size: Dp,
+    onClick: () -> Unit,
 ) {
     val row = cell.position.row
     val col = cell.position.col
     val isLightSquare = (row + col) % 2 == 0
-    val cellColor = if (isLightSquare) MaterialTheme.colorScheme.surfaceContainerLowest else MaterialTheme.colorScheme.surfaceContainerHighest
+    val cellColor =
+        if (isLightSquare) MaterialTheme.colorScheme.surfaceContainerLowest else MaterialTheme.colorScheme.surfaceContainerHighest
     val queenColor by animateColorAsState(
-            targetValue = if (cell.isConflict) MaterialTheme.colorScheme.error else
-                MaterialTheme.colorScheme.primary,
-            animationSpec = SpringSpec()
+        targetValue = if (cell.isConflict) MaterialTheme.colorScheme.error else
+            MaterialTheme.colorScheme.primary,
+        animationSpec = SpringSpec()
     )
 
     Box(
-            modifier = Modifier
-                    .background(cellColor)
-                    .size(size)
-                    .clickable { onClick() },
-            contentAlignment = Alignment.Center
+        modifier = Modifier
+            .background(cellColor)
+            .size(size)
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
     ) {
         AnimatedVisibility(
-                visible = cell.hasQueen,
-                enter = scaleIn() + fadeIn(),
-                exit = scaleOut() + fadeOut()
+            visible = cell.hasQueen,
+            enter = scaleIn() + fadeIn(),
+            exit = scaleOut() + fadeOut(),
         ) {
             Image(
-                    modifier = Modifier
-                            .size(size * 0.4f),
-                    painter = painterResource(R.drawable.chess_queen),
-                    colorFilter = ColorFilter.tint(
-                            queenColor
-                    ),
-                    contentDescription = null,
+                modifier = Modifier
+                    .size(size * 0.4f),
+                painter = painterResource(R.drawable.chess_queen),
+                colorFilter = ColorFilter.tint(
+                    queenColor
+                ),
+                contentDescription = null,
             )
         }
 
         AnimatedBorder(
-                size = size,
-                isConflict = cell.isConflict,
-                baseColor = cellColor
+            size = size,
+            isConflict = cell.isConflict,
+            baseColor = cellColor
         )
     }
 }
 
 @Composable
-fun AnimatedBorder(
-        size: Dp,
-        isConflict: Boolean,
-        baseColor: Color,
+private fun AnimatedBorder(
+    size: Dp,
+    isConflict: Boolean,
+    baseColor: Color,
 ) {
     val borderColor by animateColorAsState(
-            targetValue = if (isConflict) MaterialTheme.colorScheme.error else baseColor,
-            label = "BorderColorAnimation",
-            animationSpec = SpringSpec()
+        targetValue = if (isConflict) MaterialTheme.colorScheme.error else baseColor,
+        label = "BorderColorAnimation",
+        animationSpec = SpringSpec()
     )
 
     Box(
-            modifier = Modifier
-                    .border(
-                            width = 2.dp,
-                            color = borderColor,
-                            shape = AbsoluteRoundedCornerShape(size = 8.dp)
-                    )
-                    .size(size)
+        modifier = Modifier
+            .border(
+                width = 2.dp,
+                color = borderColor,
+                shape = AbsoluteRoundedCornerShape(size = 8.dp)
+            )
+            .size(size)
     )
 }
 
 @Preview
 @Composable
 private fun GameScreenPreview(
-        @PreviewParameter(GameStatePreviewProvider::class) state: GameState
+    @PreviewParameter(GameStatePreviewProvider::class) state: GameState
 ) {
     NQueensTheme {
         BoardView(
-                state = state,
-                onPlaceQueen = {}
+            state = state,
+            onPlaceQueen = {}
         )
     }
 }

@@ -3,8 +3,10 @@ package com.jarosz.szymon.nqueens.ui.game
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jarosz.szymon.nqueens.board.BoardEngine
+import com.jarosz.szymon.nqueens.board.Piece
+import com.jarosz.szymon.nqueens.board.PieceType
 import com.jarosz.szymon.nqueens.board.Position
+import com.jarosz.szymon.nqueens.board.SimpleBoardEngine
 import com.jarosz.szymon.nqueens.data.GameResult
 import com.jarosz.szymon.nqueens.data.ResultsRepository
 import com.jarosz.szymon.nqueens.di.DefaultDispatcher
@@ -26,21 +28,21 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
-        private val resultsRepo: ResultsRepository,
-        private val timer: Timer,
-        @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
-        savedStateHandle: SavedStateHandle,
+    private val resultsRepo: ResultsRepository,
+    private val timer: Timer,
+    @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val _boardSize: Int = checkNotNull(savedStateHandle["boardSize"])
     private val _state = MutableStateFlow(_initialState)
-    private val _boardEngine = BoardEngine(_boardSize)
+    private val _boardEngine = SimpleBoardEngine(_boardSize)
 
     val state: StateFlow<GameState> = _state.asStateFlow()
 
     init {
         timer.ticker.onEach { _state.value = _state.value.copy(time = it) }
-                .flowOn(defaultDispatcher)
-                .launchIn(viewModelScope)
+            .flowOn(defaultDispatcher)
+            .launchIn(viewModelScope)
         timer.start(viewModelScope)
     }
 
@@ -48,15 +50,15 @@ class GameViewModel @Inject constructor(
         get() = GameState(_boardSize, _boardSize.generateUIBoard())
 
     fun placeQueen(position: Position) {
-        if (_boardEngine.hasQueen(position)) {
-            _boardEngine.removeQueen(position)
-        } else if (_boardEngine.placedQueens.size < _boardSize) {
-            _boardEngine.addQueen(position)
+        if (_boardEngine.hasPiece(position)) {
+            _boardEngine.removePiece(position)
+        } else if (_boardEngine.placedPieces.size < _boardSize) {
+            _boardEngine.addPiece(Piece(position, PieceType.QUEEN))
         } else {
             return
         }
 
-        // Conflicts extracted here to be calculated only once
+        // Conflicts extracted here to be calculated once
         val conflicts = _boardEngine.getConflicts()
         val completed = _boardEngine.isGameCompleted(conflicts)
 
@@ -66,7 +68,8 @@ class GameViewModel @Inject constructor(
         }
 
         val board = _boardEngine.toUIBoard(conflicts)
-        _state.value = _state.value.copy(board = board, showWinDialog = completed)
+        _state.value =
+            _state.value.copy(board = board, showWinDialog = completed)
     }
 
     private fun saveGameResult(time: Long) {
@@ -74,7 +77,13 @@ class GameViewModel @Inject constructor(
             val bestResult = resultsRepo.bestResult(_boardSize)
 
             if ((bestResult?.timeMillis ?: Long.MAX_VALUE) > time) {
-                resultsRepo.insertResult(GameResult(_boardSize, System.currentTimeMillis(), time))
+                resultsRepo.insertResult(
+                    GameResult(
+                        _boardSize,
+                        System.currentTimeMillis(),
+                        time
+                    )
+                )
             }
         }
     }
@@ -89,21 +98,4 @@ class GameViewModel @Inject constructor(
         timer.start(viewModelScope)
     }
 }
-
-data class GameState(
-        val boardSize: Int,
-        val board: List<Cell> = emptyList(),
-        val showWinDialog: Boolean = false,
-        val time: Long = 0L
-) {
-    val placedQueensCount: Int
-        get() = board.count { it.hasQueen }
-}
-
-data class Cell(
-        val position: Position,
-        val hasQueen: Boolean = false,
-        val isConflict: Boolean = false,
-        val highlight: Boolean = false,
-)
 
