@@ -11,7 +11,7 @@ import java.util.Locale
 
 fun Int.toBoardSizeFormat(): String = "${this}x${this}"
 
-fun Long.toDurationFormat(): String = String.format(Locale.getDefault(), "%.2f", this / 1000f)
+fun Long.toDurationFormat(): String = String.format(Locale.getDefault(), "%.2fs", this / 1000f)
 
 fun Long.toDateFormat(): String {
     val date = Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault())

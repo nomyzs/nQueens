@@ -1,5 +1,7 @@
 package com.jarosz.szymon.nqueens
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -21,7 +23,10 @@ sealed class Screen(val route: String) {
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
-    NavHost(navController = navController, startDestination = Screen.Home.route) {
+    NavHost(
+            navController = navController, startDestination = Screen.Home.route,
+
+            ) {
         val homeOutput = object : HomeScreenOutput {
             override fun onStartGame(boardSize: Int) =
                     navController.navigate(Screen.Game.createRoute(boardSize))
@@ -35,10 +40,18 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         }
         composable(
                 Screen.Game.route,
+                enterTransition = {
+                    slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up, tween(TRANSITION_DURATION))
+                },
+                exitTransition = {
+                    slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down, tween(TRANSITION_DURATION))
+                },
                 arguments = listOf(navArgument("boardSize") { type = NavType.IntType }),
         ) { _ ->
             GameScreen(gameOutput)
         }
     }
 }
+
+const val TRANSITION_DURATION = 250
 

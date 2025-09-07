@@ -14,15 +14,13 @@ import javax.inject.Inject
 
 // TODO UI
 // TODO animations
-// TODO tests
-// TODO screen transitions
+// TODO app icon
 // TODO sfx
 // TODO Readme file
 // TODO Record video
 // TODO explore more backStackEntry in appNav
 // optional:
 // Zen master theme - tell the story,
-// pagination
 @HiltViewModel
 class HomeViewModel @Inject constructor(resultsRepo: ResultsRepository) : ViewModel() {
     private val _boardSize = MutableStateFlow(HomeState.DEFAULT_BOARD_SIZE)
