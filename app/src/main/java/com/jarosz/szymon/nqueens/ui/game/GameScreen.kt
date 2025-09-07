@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -16,13 +17,13 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,7 +36,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jarosz.szymon.nqueens.R
-import com.jarosz.szymon.nqueens.ui.common.AppLogo
 import com.jarosz.szymon.nqueens.ui.common.GameCard
 import com.jarosz.szymon.nqueens.ui.common.toBoardSizeFormat
 import com.jarosz.szymon.nqueens.ui.common.toDurationFormat
@@ -69,16 +69,40 @@ fun GameScreen(output: GameScreenOutput, viewModel: GameViewModel = hiltViewMode
 }
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
-private fun GameTopBar(state: GameState, onBack: () -> Boolean, onResetGame: () -> Unit) {
-    CenterAlignedTopAppBar(
-            title = {
-                Row {
-                    AppLogo(modifier = Modifier.size(24.dp))
-                    Text(state.boardSize.toBoardSizeFormat())
+private fun GameBody(
+        state: GameState,
+        output: GameScreenOutput,
+        onResetGame: () -> Unit,
+        onPlaceQueen: (Cell) -> Unit,
+) {
+    Scaffold(
+            topBar = {
+                GameTopBar({ output.onBack() }, onResetGame)
+            }
+    ) { innerPadding ->
+        Box(
+                Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize(),
+                contentAlignment = Alignment.TopCenter
+        ) {
 
-                }
-            },
+            Column(modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
+                GameInfo(state)
+                BoardView(state, onPlaceQueen)
+                Spacer(Modifier.fillMaxWidth())
+            }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun GameTopBar(onBack: () -> Boolean, onResetGame: () -> Unit) {
+    TopAppBar(
+            title = {},
             navigationIcon = {
                 IconButton(onClick = { onBack() }) {
                     Icon(
@@ -99,52 +123,37 @@ private fun GameTopBar(state: GameState, onBack: () -> Boolean, onResetGame: () 
 }
 
 @Composable
-private fun GameBody(
-        state: GameState,
-        output: GameScreenOutput,
-        onResetGame: () -> Unit,
-        onPlaceQueen: (Cell) -> Unit,
-) {
-    Scaffold(
-            topBar = {
-                GameTopBar(state, { output.onBack() }, onResetGame)
-            }
-    ) { innerPadding ->
-        Box(
-                Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize(),
-                contentAlignment = Alignment.TopCenter
+private fun GameInfo(state: GameState) {
+    GameCard {
+        Row(
+                modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
         ) {
-
-            Column(modifier = Modifier.padding(16.dp).fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
-                GameCard {
-                    Row(
-                            modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        HeaderItem(
-                                "Queens:",
-                                "${state.placedQueensCount}/${state.boardSize}",
-                                R.drawable.chess_queen
-                        )
-                        HeaderItem(
-                                "Time:", state.time.toDurationFormat(), R.drawable.clock,
-                        )
-                    }
-                }
-                BoardView(state, onPlaceQueen)
-                Spacer(Modifier.fillMaxWidth())
-            }
+            HeaderItem(
+                    title = "Queens:",
+                    modifier = Modifier.weight(1f),
+                    value = "${state.placedQueensCount}/${state.boardSize}",
+                    iconResId = R.drawable.chess_queen
+            )
+            HeaderItem(
+                    title = "Board size:",
+                    value = state.boardSize.toBoardSizeFormat(),
+                    iconResId = R.drawable.chess_board,
+                    modifier = Modifier.weight(1f),
+            )
+            HeaderItem(
+                    modifier = Modifier.weight(1f),
+                    title = "Time:",
+                    value = state.time.toDurationFormat(), iconResId = R.drawable.clock,
+            )
         }
     }
 }
 
 @Composable
-private fun HeaderItem(title: String, value: String, @DrawableRes iconResId: Int? = null) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+private fun HeaderItem(title: String, value: String, @DrawableRes iconResId: Int? = null, modifier: Modifier) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             iconResId?.let {
                 Image(
@@ -157,6 +166,7 @@ private fun HeaderItem(title: String, value: String, @DrawableRes iconResId: Int
             }
             Text(title, style = MaterialTheme.typography.labelSmall)
         }
+        Spacer(Modifier.height(4.dp))
         Text(value, style = MaterialTheme.typography.titleLarge)
     }
 }
