@@ -33,11 +33,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastRoundToInt
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jarosz.szymon.nqueens.ui.common.AppLogo
 import com.jarosz.szymon.nqueens.ui.common.GameCard
 import com.jarosz.szymon.nqueens.ui.common.toBoardSizeFormat
 import com.jarosz.szymon.nqueens.ui.common.toDateFormat
 import com.jarosz.szymon.nqueens.ui.common.toDurationFormat
-import com.jarosz.szymon.nqueens.ui.game.QUEEN
 
 @Composable
 fun HomeScreen(output: HomeScreenOutput, viewModel: HomeViewModel = hiltViewModel()) {
@@ -53,7 +53,7 @@ fun HomeScreen(output: HomeScreenOutput, viewModel: HomeViewModel = hiltViewMode
                     verticalArrangement = Arrangement.Top,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(QUEEN, style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.primary)
+                    AppLogo(Modifier.size(32.dp))
                     Spacer(Modifier.width(4.dp))
                     Text("N-Queens", style = MaterialTheme.typography.displaySmall)
                 }

@@ -1,7 +1,12 @@
 package com.jarosz.szymon.nqueens.ui.game
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.SpringSpec
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,7 +16,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
@@ -32,16 +36,19 @@ import com.jarosz.szymon.nqueens.ui.theme.NQueensTheme
 
 @Composable
 fun BoardView(state: GameState, onPlaceQueen: (cell: Cell) -> Unit) {
+    val boardPadding = 2
+
     BoxWithConstraints(
             modifier = Modifier
-                    .padding(8.dp)
-                    .background(Color.Black)
+                    .padding(16.dp)
+                    .border(2.dp, MaterialTheme.colorScheme.outlineVariant, shape = AbsoluteRoundedCornerShape(8.dp))
     ) {
         val size = minOf(maxWidth, maxHeight)
 
         Box(
                 modifier = Modifier
-                        .size(size),
+                        .padding(boardPadding.dp)
+                        .size(size - boardPadding.dp * 2),
                 contentAlignment = Alignment.Center,
         ) {
             Column {
@@ -52,7 +59,7 @@ fun BoardView(state: GameState, onPlaceQueen: (cell: Cell) -> Unit) {
                         row.forEach { cell ->
                             BoardCell(
                                     cell,
-                                    size / state.boardSize,
+                                    (size - boardPadding.dp * 2) / state.boardSize,
                                     onClick = { onPlaceQueen(cell) },
                             )
                         }
@@ -73,41 +80,48 @@ fun BoardCell(
     val col = cell.position.col
     val isLightSquare = (row + col) % 2 == 0
     val cellColor = if (isLightSquare) MaterialTheme.colorScheme.surfaceContainerLowest else MaterialTheme.colorScheme.surfaceContainerHighest
+    val queenColor by animateColorAsState(
+            targetValue = if (cell.isConflict) MaterialTheme.colorScheme.error else
+                MaterialTheme.colorScheme.primary,
+            animationSpec = SpringSpec()
+    )
 
-    AnimatedBorderCell(
-            size = size,
-            isConflict = cell.isConflict,
-            baseColor = cellColor
+    Box(
+            modifier = Modifier
+                    .background(cellColor)
+                    .size(size)
+                    .clickable { onClick() },
+            contentAlignment = Alignment.Center
     ) {
-        Box(
-                modifier = Modifier
-                        .background(cellColor)
-                        .fillMaxSize()
-                        .clickable { onClick() },
-                contentAlignment = Alignment.Center
+        AnimatedVisibility(
+                visible = cell.hasQueen,
+                enter = scaleIn() + fadeIn(),
+                exit = scaleOut() + fadeOut()
         ) {
-            if (cell.hasQueen) {
-                Image(
-                        modifier = Modifier
-                                .size(size * 0.4f),
-                        painter = painterResource(R.drawable.chess_queen),
-                        colorFilter = ColorFilter.tint(
-                                if (cell.isConflict) MaterialTheme.colorScheme.error else
-                                    MaterialTheme.colorScheme.primary
-                        ),
-                        contentDescription = null,
-                )
-            }
+            Image(
+                    modifier = Modifier
+                            .size(size * 0.4f),
+                    painter = painterResource(R.drawable.chess_queen),
+                    colorFilter = ColorFilter.tint(
+                            queenColor
+                    ),
+                    contentDescription = null,
+            )
         }
+
+        AnimatedBorder(
+                size = size,
+                isConflict = cell.isConflict,
+                baseColor = cellColor
+        )
     }
 }
 
 @Composable
-fun AnimatedBorderCell(
+fun AnimatedBorder(
         size: Dp,
         isConflict: Boolean,
         baseColor: Color,
-        content: @Composable () -> Unit
 ) {
     val borderColor by animateColorAsState(
             targetValue = if (isConflict) MaterialTheme.colorScheme.error else baseColor,
@@ -123,9 +137,7 @@ fun AnimatedBorderCell(
                             shape = AbsoluteRoundedCornerShape(size = 8.dp)
                     )
                     .size(size)
-    ) {
-        content()
-    }
+    )
 }
 
 @Preview
