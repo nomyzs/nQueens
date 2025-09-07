@@ -25,12 +25,25 @@ class Queen(val position: Position) {
 
         return moves
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Queen
+
+        return position == other.position
+    }
+
+    override fun hashCode(): Int {
+        return position.hashCode()
+    }
 }
 
 class BoardEngine(val size: Int) {
-    private val _placedQueens = mutableListOf<Queen>()
+    private val _placedQueens = mutableSetOf<Queen>()
 
-    val placedQueens: List<Queen> get() = _placedQueens
+    val placedQueens: Set<Queen> get() = _placedQueens
 
     fun hasQueen(pos: Position): Boolean =
             _placedQueens.any { it.position == pos }
