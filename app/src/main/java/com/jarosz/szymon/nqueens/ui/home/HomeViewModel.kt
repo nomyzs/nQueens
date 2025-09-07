@@ -12,13 +12,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
-// TODO app icon
-// TODO sfx
-// TODO Readme file
-// TODO Record video
-// TODO explore more backStackEntry in appNav
-// optional:
-// Zen master theme - tell the story,
 @HiltViewModel
 class HomeViewModel @Inject constructor(resultsRepo: ResultsRepository) : ViewModel() {
     private val _boardSize = MutableStateFlow(HomeState.DEFAULT_BOARD_SIZE)
