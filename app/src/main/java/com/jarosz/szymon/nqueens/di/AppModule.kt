@@ -25,7 +25,8 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
-            Room.databaseBuilder(context, AppDatabase::class.java, "nQueens.db").build()
+        Room.databaseBuilder(context, AppDatabase::class.java, "nQueens.db")
+            .build()
 
 
     @Provides
@@ -33,7 +34,8 @@ object AppModule {
 
 
     @Provides
-    fun provideRepository(dao: ResultsDao): ResultsRepository = ResultsRepositoryImpl(dao)
+    fun provideRepository(dao: ResultsDao): ResultsRepository =
+        ResultsRepositoryImpl(dao)
 }
 
 @Module

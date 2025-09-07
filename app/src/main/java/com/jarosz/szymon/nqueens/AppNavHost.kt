@@ -26,7 +26,9 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
 
         ) {
         composable(Screen.Home.route) {
-            HomeScreen({ boardSize -> navController.navigate(Screen.Game.createRoute(boardSize)) })
+            HomeScreen({ boardSize ->
+                navController.navigate(Screen.Game.createRoute(boardSize))
+            })
         }
         composable(
             Screen.Game.route,
@@ -42,7 +44,9 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                     tween(TRANSITION_DURATION)
                 )
             },
-            arguments = listOf(navArgument("boardSize") { type = NavType.IntType }),
+            arguments = listOf(navArgument("boardSize") {
+                type = NavType.IntType
+            }),
         ) { _ ->
             GameScreen({ navController.popBackStack() })
         }

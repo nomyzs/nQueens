@@ -40,26 +40,38 @@ import com.jarosz.szymon.nqueens.ui.common.toDateFormat
 import com.jarosz.szymon.nqueens.ui.common.toDurationFormat
 
 @Composable
-fun HomeScreen(output: HomeScreenOutput, viewModel: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(
+    output: HomeScreenOutput,
+    viewModel: HomeViewModel = hiltViewModel()
+) {
     val state by viewModel.homeState.collectAsStateWithLifecycle()
 
     Scaffold { innerPadding ->
         Box(modifier = Modifier.padding(16.dp)) {
             Column(
-                    modifier = Modifier
-                            .padding(innerPadding)
-                            .fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top,
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     AppLogo(Modifier.size(32.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("N-Queens", style = MaterialTheme.typography.displaySmall)
+                    Text(
+                        "N-Queens",
+                        style = MaterialTheme.typography.displaySmall
+                    )
                 }
-                Text("Place queens without conflicts", style = MaterialTheme.typography.labelSmall)
+                Text(
+                    "Place queens without conflicts",
+                    style = MaterialTheme.typography.labelSmall
+                )
                 Spacer(Modifier.height(16.dp))
-                GameSetup(state, { viewModel.updateBoardSize(it) }, { output.onStartGame(it) })
+                GameSetup(
+                    state,
+                    { viewModel.updateBoardSize(it) },
+                    { output.onStartGame(it) })
                 Spacer(Modifier.height(16.dp))
                 GameCard { BestTimes(state) }
             }
@@ -70,38 +82,54 @@ fun HomeScreen(output: HomeScreenOutput, viewModel: HomeViewModel = hiltViewMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GameSetup(state: HomeState, onSliderValueChange: (Int) -> Unit, onStartGame: (boardSize: Int) -> Unit) {
+fun GameSetup(
+    state: HomeState,
+    onSliderValueChange: (Int) -> Unit,
+    onStartGame: (boardSize: Int) -> Unit
+) {
     GameCard {
         Column {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Board size:", style = MaterialTheme.typography.titleMedium)
-                Text("${state.boardSize} x ${state.boardSize}", style = MaterialTheme.typography.titleMedium)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    "Board size:",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    "${state.boardSize} x ${state.boardSize}",
+                    style = MaterialTheme.typography.titleMedium
+                )
             }
             Slider(
-                    valueRange = 4f..20f, value = state.boardSize.toFloat(),
-                    onValueChange = { onSliderValueChange(it.fastRoundToInt()) },
-                    track = { sliderState ->
-                        SliderDefaults.Track(
-                                sliderState,
-                                modifier = Modifier.height(8.dp),
-                                thumbTrackGapSize = 0.dp,
-                                drawTick = { _, _ -> },
-                                drawStopIndicator = { _ -> },
-                        )
-                    },
-                    thumb = {
-                        Box(
-                                modifier = Modifier
-                                        .size(24.dp)
-                                        .padding(0.dp)
-                                        .background(MaterialTheme.colorScheme.primary, CircleShape),
-                        )
-                    },
-
+                valueRange = 4f..20f, value = state.boardSize.toFloat(),
+                onValueChange = { onSliderValueChange(it.fastRoundToInt()) },
+                track = { sliderState ->
+                    SliderDefaults.Track(
+                        sliderState,
+                        modifier = Modifier.height(8.dp),
+                        thumbTrackGapSize = 0.dp,
+                        drawTick = { _, _ -> },
+                        drawStopIndicator = { _ -> },
                     )
+                },
+                thumb = {
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .padding(0.dp)
+                            .background(
+                                MaterialTheme.colorScheme.primary,
+                                CircleShape
+                            ),
+                    )
+                },
+
+                )
             Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { onStartGame(state.boardSize) }
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { onStartGame(state.boardSize) }
             ) { Text("Start game") }
         }
     }
@@ -118,13 +146,28 @@ private fun BestTimes(state: HomeState) {
                 items(state.results.size) { index ->
                     val result = state.results[index]
                     Card(
-                            Modifier.padding(vertical = 4.dp),
-                            border = if (state.boardSize == result.boardSize) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
-                            shape = MaterialTheme.shapes.medium) {
+                        Modifier.padding(vertical = 4.dp),
+                        border = if (state.boardSize == result.boardSize) BorderStroke(
+                            2.dp,
+                            MaterialTheme.colorScheme.primary
+                        ) else null,
+                        shape = MaterialTheme.shapes.medium
+                    ) {
                         ListItem(
-                                { Text(result.timestamp.toDateFormat()) },
-                                leadingContent = { Text(result.boardSize.toBoardSizeFormat(), fontWeight = FontWeight.Bold) },
-                                trailingContent = { Text(result.timeMillis.toDurationFormat(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold) }
+                            { Text(result.timestamp.toDateFormat()) },
+                            leadingContent = {
+                                Text(
+                                    result.boardSize.toBoardSizeFormat(),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            },
+                            trailingContent = {
+                                Text(
+                                    result.timeMillis.toDurationFormat(),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         )
                     }
                 }

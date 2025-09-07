@@ -1,9 +1,7 @@
 package com.jarosz.szymon.nqueens.ui.common
 
-import com.jarosz.szymon.nqueens.R
 import com.jarosz.szymon.nqueens.board.BoardEngine
 import com.jarosz.szymon.nqueens.board.CellBasedBoardEngine
-import com.jarosz.szymon.nqueens.board.PieceType
 import com.jarosz.szymon.nqueens.board.Position
 import com.jarosz.szymon.nqueens.board.SimpleBoardEngine
 import com.jarosz.szymon.nqueens.ui.game.Cell

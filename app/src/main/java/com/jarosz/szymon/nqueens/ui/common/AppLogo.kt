@@ -13,9 +13,9 @@ import com.jarosz.szymon.nqueens.R
 @Composable
 fun AppLogo(modifier: Modifier?) {
     Image(
-            painter = painterResource(id = R.drawable.chess_queen),
-            colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary),
-            contentDescription = null,
-            modifier = modifier ?: Modifier.size(24.dp)
+        painter = painterResource(id = R.drawable.chess_queen),
+        colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary),
+        contentDescription = null,
+        modifier = modifier ?: Modifier.size(24.dp)
     )
 }

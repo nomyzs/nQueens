@@ -13,13 +13,15 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(resultsRepo: ResultsRepository) : ViewModel() {
+class HomeViewModel @Inject constructor(resultsRepo: ResultsRepository) :
+    ViewModel() {
     private val _boardSize = MutableStateFlow(HomeState.DEFAULT_BOARD_SIZE)
     private val _resultsFlow = resultsRepo.getResults()
 
-    val homeState: StateFlow<HomeState> = combine(_boardSize, _resultsFlow) { size, results ->
-        HomeState(size, results)
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, _initialState)
+    val homeState: StateFlow<HomeState> =
+        combine(_boardSize, _resultsFlow) { size, results ->
+            HomeState(size, results)
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, _initialState)
 
     private val _initialState: HomeState
         get() = HomeState()
@@ -30,7 +32,10 @@ class HomeViewModel @Inject constructor(resultsRepo: ResultsRepository) : ViewMo
 }
 
 
-data class HomeState(val boardSize: Int = DEFAULT_BOARD_SIZE, val results: List<GameResult> = emptyList()) {
+data class HomeState(
+    val boardSize: Int = DEFAULT_BOARD_SIZE,
+    val results: List<GameResult> = emptyList()
+) {
     companion object {
         const val DEFAULT_BOARD_SIZE = 5
     }

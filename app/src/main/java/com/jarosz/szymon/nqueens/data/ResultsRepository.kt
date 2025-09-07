@@ -12,11 +12,13 @@ interface ResultsRepository {
 }
 
 
-class ResultsRepositoryImpl @Inject constructor(private val dao: ResultsDao) : ResultsRepository {
+class ResultsRepositoryImpl @Inject constructor(private val dao: ResultsDao) :
+    ResultsRepository {
     override fun getResults(): Flow<List<GameResult>> = dao.getResults()
 
     override suspend fun insertResult(result: GameResult) = dao.insert(result)
 
-    override suspend fun bestResult(boardSize: Int): GameResult? = dao.bestResult(boardSize)
+    override suspend fun bestResult(boardSize: Int): GameResult? =
+        dao.bestResult(boardSize)
 
 }

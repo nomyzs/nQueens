@@ -43,7 +43,6 @@ import com.jarosz.szymon.nqueens.ui.theme.NQueensTheme
 fun GameScreen(
     output: GameScreenOutput, viewModel: GameViewModel = hiltViewModel()
 ) {
-    //TODO: check if collectAsStateWithLifecycle is better and solve dialog dismiss if yes
     val state by viewModel.state.collectAsState()
 
     GameBody(
