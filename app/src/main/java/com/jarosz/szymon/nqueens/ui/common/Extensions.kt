@@ -3,7 +3,7 @@ package com.jarosz.szymon.nqueens.ui.common
 import com.jarosz.szymon.nqueens.board.BoardEngine
 import com.jarosz.szymon.nqueens.board.CellBasedBoardEngine
 import com.jarosz.szymon.nqueens.board.Position
-import com.jarosz.szymon.nqueens.board.SimpleBoardEngine
+import com.jarosz.szymon.nqueens.board.BoardEngineImpl
 import com.jarosz.szymon.nqueens.ui.game.Cell
 import java.time.Instant
 import java.time.ZoneId
@@ -24,6 +24,17 @@ fun Long.toDateFormat(): String {
 
 // [BoardEngine] extensions
 
+fun BoardEngineImpl.toUIBoard(conflicts: List<Position>): List<Cell> {
+    val cells = size.generateUIBoard()
+
+    return cells.map {
+        it.copy(
+            hasQueen = placedPieces.find { piece -> piece.position == it.position } != null,
+            isConflict = conflicts.contains(it.position),
+        )
+    }
+}
+
 fun CellBasedBoardEngine.toUIBoard(conflicts: List<Position>): List<Cell> {
     return boardCells.map(
         {
@@ -34,17 +45,6 @@ fun CellBasedBoardEngine.toUIBoard(conflicts: List<Position>): List<Cell> {
             )
         }
     )
-}
-
-fun SimpleBoardEngine.toUIBoard(conflicts: List<Position>): List<Cell> {
-    val cells = size.generateUIBoard()
-
-    return cells.map {
-        it.copy(
-            hasQueen = placedPieces.find { piece -> piece.position == it.position } != null,
-            isConflict = conflicts.contains(it.position),
-        )
-    }
 }
 
 fun BoardEngine.isGameCompleted(conflicts: List<Position>): Boolean =

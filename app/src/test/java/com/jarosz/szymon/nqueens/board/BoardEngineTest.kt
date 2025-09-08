@@ -6,7 +6,7 @@ class BoardEngineTest {
 
     @Test
     fun `place queen`() {
-        val boardEngine = SimpleBoardEngine(4)
+        val boardEngine = BoardEngineImpl(4)
         val position = Position(0, 0)
         boardEngine.addPiece(Piece(position, PieceType.QUEEN))
         assert(boardEngine.hasPiece(position))
@@ -14,7 +14,7 @@ class BoardEngineTest {
 
     @Test
     fun `places only one queen at position`() {
-        val boardEngine = SimpleBoardEngine(4)
+        val boardEngine = BoardEngineImpl(4)
         val position = Position(0, 0)
         boardEngine.addPiece(Piece(position, PieceType.QUEEN))
         boardEngine.addPiece(Piece(position, PieceType.QUEEN))
@@ -25,7 +25,7 @@ class BoardEngineTest {
 
     @Test
     fun `remove and remove queen`() {
-        val boardEngine = SimpleBoardEngine(4)
+        val boardEngine = BoardEngineImpl(4)
         val position = Position(0, 0)
         boardEngine.addPiece(Piece(position, PieceType.QUEEN))
         assert(boardEngine.hasPiece(position))
@@ -36,7 +36,7 @@ class BoardEngineTest {
 
     @Test
     fun `find potential moves`() {
-        val boardEngine = SimpleBoardEngine(4)
+        val boardEngine = BoardEngineImpl(4)
         val position = Position(0, 0)
         val queen = Piece(position, PieceType.QUEEN)
         val moves = queen.getMoves(boardEngine)
@@ -64,7 +64,7 @@ class BoardEngineTest {
 
     @Test
     fun `detects row conflict`() {
-        val boardEngine = SimpleBoardEngine(4)
+        val boardEngine = BoardEngineImpl(4)
         boardEngine.addPiece(Piece(Position(0, 0), PieceType.QUEEN))
         boardEngine.addPiece(Piece(Position(0, 3), PieceType.QUEEN))
 
@@ -80,7 +80,7 @@ class BoardEngineTest {
 
     @Test
     fun `detects column conflict`() {
-        val boardEngine = SimpleBoardEngine(4)
+        val boardEngine = BoardEngineImpl(4)
         boardEngine.addPiece(Piece(Position(0, 0), PieceType.QUEEN))
         boardEngine.addPiece(Piece(Position(3, 0), PieceType.QUEEN))
 
@@ -96,7 +96,7 @@ class BoardEngineTest {
 
     @Test
     fun `detects diagonal conflict`() {
-        val boardEngine = SimpleBoardEngine(4)
+        val boardEngine = BoardEngineImpl(4)
         boardEngine.addPiece(Piece(Position(0, 0), PieceType.QUEEN))
         boardEngine.addPiece(Piece(Position(3, 3), PieceType.QUEEN))
 
@@ -112,7 +112,7 @@ class BoardEngineTest {
 
     @Test
     fun `no conflicts`() {
-        val boardEngine = SimpleBoardEngine(4)
+        val boardEngine = BoardEngineImpl(4)
         boardEngine.addPiece(Piece(Position(0, 1), PieceType.QUEEN))
         boardEngine.addPiece(Piece(Position(1, 3), PieceType.QUEEN))
         boardEngine.addPiece(Piece(Position(2, 0), PieceType.QUEEN))

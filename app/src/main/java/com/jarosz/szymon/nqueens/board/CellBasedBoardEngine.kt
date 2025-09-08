@@ -1,7 +1,7 @@
 package com.jarosz.szymon.nqueens.board
 
 /**
- * Unused implementation of BoardEngine that uses a list of cells to manage pieces on the board.
+ * Different implementation of BoardEngine that uses a list of cells to manage pieces on the board.
  * Left the experiment here for reference. Offers simpler mapping to UI layer, potentially
  * removes duplication of board generation logic and decouples position from [Piece] class.
  * */

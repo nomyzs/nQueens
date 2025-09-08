@@ -1,6 +1,6 @@
 package com.jarosz.szymon.nqueens.board
 
-class SimpleBoardEngine(size: Int) : BoardEngine(size) {
+class BoardEngineImpl(size: Int) : BoardEngine(size) {
     private val _placedPieces = mutableSetOf<Piece>()
 
     override val placedPieces: Set<Piece> get() = _placedPieces

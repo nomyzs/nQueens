@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.jarosz.szymon.nqueens.board.Piece
 import com.jarosz.szymon.nqueens.board.PieceType
 import com.jarosz.szymon.nqueens.board.Position
-import com.jarosz.szymon.nqueens.board.SimpleBoardEngine
+import com.jarosz.szymon.nqueens.board.BoardEngineImpl
 import com.jarosz.szymon.nqueens.data.GameResult
 import com.jarosz.szymon.nqueens.data.ResultsRepository
 import com.jarosz.szymon.nqueens.di.DefaultDispatcher
@@ -35,7 +35,7 @@ class GameViewModel @Inject constructor(
 ) : ViewModel() {
     private val _boardSize: Int = checkNotNull(savedStateHandle["boardSize"])
     private val _state = MutableStateFlow(_initialState)
-    private val _boardEngine = SimpleBoardEngine(_boardSize)
+    private val _boardEngine = BoardEngineImpl(_boardSize)
 
     val state: StateFlow<GameState> = _state.asStateFlow()
 
