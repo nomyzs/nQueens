@@ -79,7 +79,7 @@ AI tools and generation used mostly for finding solutions, generating boilerplat
 
 ## Testing
 
-Unit tests are provided for core ViewModel logic, ensuring correctness of game rules and state transitions.
+Unit tests are provided for core ViewModel logic, BoardEngine and Timer, to ensuring correctness of game rules and state transitions.
 
 ## License
 
