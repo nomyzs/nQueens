@@ -13,24 +13,40 @@ An Android app for solving the classic N-Queens puzzle. The goal is to place N q
 
 [Video](nqueens_demo.mp4)
 
+## Running the app
+
+You can install the app on your connected device by running:
+
+```
+./gradlew :app:installDebug
+```
+
+## Running tests
+
+To run tests from the terminal, execute:
+
+```
+./gradlew :app:testDebugUnitTest
+```
+
 ## Architecture & Patterns
 
 ### Game Engine
 
 Decided on the approach that is simple and easy to understand, rather than the most optimal one. The board maximum size is 20x20, so performance is was not a concern.
-The board logic is encapsulated in the [BoardEngine.kt](java/com/jarosz/szymon/nqueens/board/BoardEngine.kt) class and NQueens game rules are implemented in [GameViewModel.kt](java/com/jarosz/szymon/nqueens/ui/game/GameViewModel.kt)
+The board logic is encapsulated in the [BoardEngineImpl.kt](app/src/main/java/com/jarosz/szymon/nqueens/board/BoardEngineImpl.kt) class and NQueens game rules are implemented in [GameViewModel.kt](app/src/main/java/com/jarosz/szymon/nqueens/ui/game/GameViewModel.kt)
 
-### MVVM (Model-View-ViewModel)
+### MVVM
 
 The app uses the MVVM pattern to separate UI logic from business logic:
 
 - **ViewModel**: Handles game state, board logic, and timer. Exposes state via `StateFlow` for reactive UI updates.
-- **View (Compose Screens)**: Observes ViewModel state and renders UI. User actions are sent to ViewModel methods.
+- **View (Compose)**: Observes ViewModel state and renders UI. User actions are sent to ViewModel methods.
 - **Model**: Board engine, data entities, and repository.
 
 ### Dependency Injection (Hilt)
 
-Hilt is used for dependency injection, providing ViewModels, repositories, and other components. This improves testability and modularity.
+Hilt is used for dependency injection, providing ViewModels, repository, and other components. This improves testability and modularity.
 
 ### Repository Pattern
 

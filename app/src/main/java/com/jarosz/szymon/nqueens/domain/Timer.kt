@@ -46,4 +46,4 @@ class TimerImpl @Inject constructor(
 
 }
 
-private const val INTERVAL = 50L
+private const val INTERVAL = 100L
