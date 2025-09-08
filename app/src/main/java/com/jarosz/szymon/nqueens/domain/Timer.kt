@@ -34,8 +34,8 @@ class TimerImpl @Inject constructor(
         job = scope.launch(dispatcher) {
             while (isActive) {
                 _ticker.emit(elapsed)
-                delay(100L)
-                elapsed += 100L
+                delay(INTERVAL)
+                elapsed += INTERVAL
             }
         }
     }
@@ -43,4 +43,7 @@ class TimerImpl @Inject constructor(
     override fun stop() {
         job?.cancel()
     }
+
 }
+
+private const val INTERVAL = 50L
